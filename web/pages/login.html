@@ -7,7 +7,7 @@
 </head>
 <body>
     <div class="login-container">
-        <!-- New: Role switching button -->
+        <!-- Role switching button -->
         <div class="role-toggle">
             <button type="button" class="role-btn active" data-role="user">
                 Customer
@@ -30,27 +30,60 @@
                     id="username" 
                     name="username" 
                     placeholder="Enter your username"
+                    autocomplete="username"
                     required
                 >
+                <!-- New: User name error prompt -->
+                <span class="error-message" id="usernameError"></span>
             </div>
 
             <!-- Password Field -->
             <div>
                 <label for="password">Password</label>
-                <input 
-                    type="password" 
-                    id="password" 
-                    name="password" 
-                    placeholder="Enter your password"
-                    required
-                >
+                <div class="password-wrapper">
+                    <input 
+                        type="password" 
+                        id="password" 
+                        name="password" 
+                        placeholder="Enter your password"
+                        autocomplete="current-password"
+                        required
+                    >
+                    <!-- New: Password display switch button -->
+                    <button type="button" id="togglePassword">
+                        Show
+                    </button>
+                </div>
+                <!-- New: Password error prompt -->
+                <span class="error-message" id="passwordError"></span>
             </div>
 
-            <!-- New: Hidden role fields -->
+            <!-- New: Remember Me and Forgot Password -->
+            <div class="form-options">
+                <label>
+                    <input type="checkbox" id="rememberMe" name="rememberMe">
+                    Remember me
+                </label>
+                <a href="#">Forgot password?</a>
+            </div>
+
+            <!-- Hidden role fields -->
             <input type="hidden" id="userRole" name="userRole" value="user">
 
             <!-- Submit Button -->
-            <button type="submit">Sign In</button>
+            <button type="submit" id="loginBtn">
+                Sign In
+            </button>
+
+            <!-- New: Login error prompt area -->
+            <div class="alert" id="loginAlert" style="display: none;">
+                <span class="alert-message"></span>
+            </div>
+
+            <!-- New: Registration link -->
+            <div class="form-footer">
+                <p>Don't have an account? <a href="#">Sign up now</a></p>
+            </div>
         </form>
     </div>
 </body>

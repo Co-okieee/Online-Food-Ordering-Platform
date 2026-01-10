@@ -28,7 +28,7 @@ public class DBConnection {
      */
     private static final String DRIVER = "oracle.jdbc.driver.OracleDriver";
     private static final String URL = "jdbc:oracle:thin:@//localhost:1521/FREE";
-    private static final String USERNAME = "SYS";
+    private static final String USERNAME = "C##COOKIE";
     private static final String PASSWORD = "123456";
 
     // ========================================

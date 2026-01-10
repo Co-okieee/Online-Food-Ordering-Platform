@@ -1,216 +1,140 @@
+cat > /home/claude/commit_10_login_ajax.js << 'JSEOF'
 /**
- * Login Page JavaScript - Form Validation
- * Description: Client-side form validation and error handling
+ * Login Page JavaScript - Complete with AJAX Submission
+ * Description: Full login functionality with backend integration
  * 
- * Features:
- * - Real-time input validation
- * - Username format checking
- * - Password strength validation
- * - Error message display
- * - Form submission handling
+ * Complete Features:
+ * - Form validation
+ * - Password toggle
+ * - Role switching
+ * - AJAX form submission
+ * - Loading states
+ * - Error handling
+ * - Success handling and redirection
  */
 
 // ========================================
-// Configuration Constants
+// Configuration
 // ========================================
 const CONFIG = {
-    // Validation rules
+    API_ENDPOINT: '/login',
     MIN_USERNAME_LENGTH: 3,
     MAX_USERNAME_LENGTH: 20,
     MIN_PASSWORD_LENGTH: 6,
     MAX_PASSWORD_LENGTH: 50,
-    
-    // Timing
-    VALIDATION_DELAY: 300, // ms - debounce delay for input validation
-    
-    // Session storage keys
+    VALIDATION_DELAY: 300,
+    REDIRECT_DELAY: 1500,
     STORAGE_KEY: 'rememberedUsername'
 };
 
-// ========================================
-// Error Messages
-// ========================================
 const MESSAGES = {
-    // Username validation messages
     USERNAME_REQUIRED: 'Username is required',
     USERNAME_TOO_SHORT: `Username must be at least ${CONFIG.MIN_USERNAME_LENGTH} characters`,
     USERNAME_TOO_LONG: `Username cannot exceed ${CONFIG.MAX_USERNAME_LENGTH} characters`,
     USERNAME_INVALID: 'Username can only contain letters, numbers, and underscores',
-    
-    // Password validation messages
     PASSWORD_REQUIRED: 'Password is required',
     PASSWORD_TOO_SHORT: `Password must be at least ${CONFIG.MIN_PASSWORD_LENGTH} characters`,
     PASSWORD_TOO_LONG: `Password cannot exceed ${CONFIG.MAX_PASSWORD_LENGTH} characters`,
-    
-    // Form validation messages
-    VALIDATION_FAILED: 'Please fix the errors above before submitting'
+    VALIDATION_FAILED: 'Please fix the errors above before submitting',
+    LOGIN_FAILED: 'Invalid username or password',
+    NETWORK_ERROR: 'Network error. Please check your connection',
+    SERVER_ERROR: 'Server error. Please try again later',
+    LOGIN_SUCCESS: 'Login successful! Redirecting...'
 };
 
-// ========================================
-// DOM Element References
-// ========================================
 let elements = {};
 
 // ========================================
-// Initialize Application
+// Initialize
 // ========================================
 document.addEventListener('DOMContentLoaded', () => {
     console.log('Login page initializing...');
-    
     initializeElements();
     initializeEventListeners();
     loadRememberedUsername();
-    
     console.log('Login page ready');
 });
 
-/**
- * Initialize all DOM element references
- * Stores references to frequently accessed elements for better performance
- */
 function initializeElements() {
     elements = {
-        // Form elements
         loginForm: document.getElementById('loginForm'),
         usernameInput: document.getElementById('username'),
         passwordInput: document.getElementById('password'),
         rememberMeCheckbox: document.getElementById('rememberMe'),
         userRoleInput: document.getElementById('userRole'),
-        
-        // Error display elements
         usernameError: document.getElementById('usernameError'),
         passwordError: document.getElementById('passwordError'),
         loginAlert: document.getElementById('loginAlert'),
-        
-        // Button elements
         loginBtn: document.getElementById('loginBtn'),
-        roleButtons: document.querySelectorAll('.role-btn')
+        togglePasswordBtn: document.getElementById('togglePassword'),
+        roleButtons: document.querySelectorAll('.role-btn'),
+        loadingOverlay: document.getElementById('loadingOverlay')
     };
 }
 
-/**
- * Initialize all event listeners
- * Sets up handlers for form submission, input validation, and user interactions
- */
 function initializeEventListeners() {
-    // Form submission
     elements.loginForm.addEventListener('submit', handleFormSubmit);
-    
-    // Real-time validation with debounce
-    elements.usernameInput.addEventListener('input', 
-        debounce(validateUsername, CONFIG.VALIDATION_DELAY)
-    );
-    elements.passwordInput.addEventListener('input', 
-        debounce(validatePassword, CONFIG.VALIDATION_DELAY)
-    );
-    
-    // Clear error messages on focus
+    elements.usernameInput.addEventListener('input', debounce(validateUsername, CONFIG.VALIDATION_DELAY));
+    elements.passwordInput.addEventListener('input', debounce(validatePassword, CONFIG.VALIDATION_DELAY));
     elements.usernameInput.addEventListener('focus', () => clearFieldError('username'));
     elements.passwordInput.addEventListener('focus', () => clearFieldError('password'));
-    
+    elements.togglePasswordBtn.addEventListener('click', togglePasswordVisibility);
+    elements.roleButtons.forEach(btn => btn.addEventListener('click', handleRoleToggle));
     console.log('Event listeners initialized');
 }
 
 // ========================================
-// Validation Functions
+// Validation
 // ========================================
-
-/**
- * Validate username input
- * Checks for: required, length, and character format
- * @returns {boolean} True if valid, false otherwise
- */
 function validateUsername() {
     const username = elements.usernameInput.value.trim();
-    
-    // Check if empty
     if (username === '') {
         showFieldError('username', MESSAGES.USERNAME_REQUIRED);
         return false;
     }
-    
-    // Check minimum length
     if (username.length < CONFIG.MIN_USERNAME_LENGTH) {
         showFieldError('username', MESSAGES.USERNAME_TOO_SHORT);
         return false;
     }
-    
-    // Check maximum length
     if (username.length > CONFIG.MAX_USERNAME_LENGTH) {
         showFieldError('username', MESSAGES.USERNAME_TOO_LONG);
         return false;
     }
-    
-    // Check format: alphanumeric and underscore only
-    const usernameRegex = /^[a-zA-Z0-9_]+$/;
-    if (!usernameRegex.test(username)) {
+    if (!/^[a-zA-Z0-9_]+$/.test(username)) {
         showFieldError('username', MESSAGES.USERNAME_INVALID);
         return false;
     }
-    
-    // Valid - clear error and mark as success
     clearFieldError('username');
     elements.usernameInput.classList.add('success');
     return true;
 }
 
-/**
- * Validate password input
- * Checks for: required and length constraints
- * @returns {boolean} True if valid, false otherwise
- */
 function validatePassword() {
     const password = elements.passwordInput.value;
-    
-    // Check if empty
     if (password === '') {
         showFieldError('password', MESSAGES.PASSWORD_REQUIRED);
         return false;
     }
-    
-    // Check minimum length
     if (password.length < CONFIG.MIN_PASSWORD_LENGTH) {
         showFieldError('password', MESSAGES.PASSWORD_TOO_SHORT);
         return false;
     }
-    
-    // Check maximum length
     if (password.length > CONFIG.MAX_PASSWORD_LENGTH) {
         showFieldError('password', MESSAGES.PASSWORD_TOO_LONG);
         return false;
     }
-    
-    // Valid - clear error and mark as success
     clearFieldError('password');
     elements.passwordInput.classList.add('success');
     return true;
 }
 
-/**
- * Validate entire form
- * Runs all field validations and returns overall result
- * @returns {boolean} True if all fields are valid
- */
 function validateForm() {
-    const isUsernameValid = validateUsername();
-    const isPasswordValid = validatePassword();
-    
-    return isUsernameValid && isPasswordValid;
+    return validateUsername() && validatePassword();
 }
 
-// ========================================
-// Error Display Functions
-// ========================================
-
-/**
- * Display error message for a specific field
- * @param {string} fieldName - Name of the field (username/password)
- * @param {string} message - Error message to display
- */
 function showFieldError(fieldName, message) {
     const input = elements[`${fieldName}Input`];
     const errorElement = elements[`${fieldName}Error`];
-    
     if (input && errorElement) {
         input.classList.add('error');
         input.classList.remove('success');
@@ -218,63 +142,40 @@ function showFieldError(fieldName, message) {
     }
 }
 
-/**
- * Clear error message for a specific field
- * @param {string} fieldName - Name of the field (username/password)
- */
 function clearFieldError(fieldName) {
     const input = elements[`${fieldName}Input`];
     const errorElement = elements[`${fieldName}Error`];
-    
     if (input && errorElement) {
         input.classList.remove('error', 'success');
         errorElement.textContent = '';
     }
 }
 
-/**
- * Display alert message above form
- * @param {string} message - Message to display
- * @param {string} type - Alert type ('error' or 'success')
- */
 function showAlert(message, type = 'error') {
     elements.loginAlert.className = `alert alert-${type}`;
     elements.loginAlert.querySelector('.alert-message').textContent = message;
     elements.loginAlert.style.display = 'block';
-    
     console.log(`Alert [${type}]: ${message}`);
 }
 
-/**
- * Hide alert message
- */
 function hideAlert() {
     elements.loginAlert.style.display = 'none';
 }
 
 // ========================================
-// Form Submission Handler
+// Form Submission with AJAX
 // ========================================
-
-/**
- * Handle form submission
- * Validates form and prepares data for submission
- * @param {Event} event - Form submit event
- */
-function handleFormSubmit(event) {
+async function handleFormSubmit(event) {
     event.preventDefault();
     hideAlert();
-    
     console.log('Form submission initiated');
     
-    // Validate entire form
     if (!validateForm()) {
         console.log('Form validation failed');
         showAlert(MESSAGES.VALIDATION_FAILED, 'error');
         return;
     }
     
-    // Get form data
     const formData = {
         username: elements.usernameInput.value.trim(),
         password: elements.passwordInput.value,
@@ -282,30 +183,141 @@ function handleFormSubmit(event) {
         rememberMe: elements.rememberMeCheckbox.checked
     };
     
-    console.log('Form validation passed');
-    console.log('Form data prepared:', {
-        username: formData.username,
-        userRole: formData.userRole,
-        rememberMe: formData.rememberMe
+    console.log('Form validation passed, submitting to backend');
+    setLoadingState(true);
+    
+    try {
+        const response = await submitLogin(formData);
+        if (response.success) {
+            handleLoginSuccess(formData);
+        } else {
+            handleLoginFailure(response.message || MESSAGES.LOGIN_FAILED);
+        }
+    } catch (error) {
+        console.error('Login error:', error);
+        handleLoginError(error);
+    } finally {
+        setLoadingState(false);
+    }
+}
+
+async function submitLogin(formData) {
+    console.log('Sending AJAX request to:', CONFIG.API_ENDPOINT);
+    
+    const response = await fetch(CONFIG.API_ENDPOINT, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: new URLSearchParams(formData)
     });
     
-    // Note: Actual submission will be handled by backend
-    // This prepares the data for AJAX submission (next commit)
+    if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+    }
     
-    return false;
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+        return await response.json();
+    }
+    
+    if (response.redirected || response.status === 200) {
+        return { success: true, redirectUrl: response.url };
+    }
+    
+    return { success: false };
+}
+
+function handleLoginSuccess(formData) {
+    console.log('Login successful!');
+    
+    if (formData.rememberMe) {
+        sessionStorage.setItem(CONFIG.STORAGE_KEY, formData.username);
+    } else {
+        sessionStorage.removeItem(CONFIG.STORAGE_KEY);
+    }
+    
+    showAlert(MESSAGES.LOGIN_SUCCESS, 'success');
+    
+    setTimeout(() => {
+        const redirectUrl = formData.userRole === 'admin' 
+            ? '/pages/admin.html' 
+            : '/pages/index.html';
+        console.log('Redirecting to:', redirectUrl);
+        window.location.href = redirectUrl;
+    }, CONFIG.REDIRECT_DELAY);
+}
+
+function handleLoginFailure(message) {
+    console.log('Login failed:', message);
+    showAlert(message, 'error');
+    shakeForm();
+}
+
+function handleLoginError(error) {
+    console.error('Network/Server error:', error);
+    let message = MESSAGES.NETWORK_ERROR;
+    if (error.message.includes('HTTP error')) {
+        message = MESSAGES.SERVER_ERROR;
+    }
+    showAlert(message, 'error');
+    shakeForm();
+}
+
+function setLoadingState(isLoading) {
+    if (isLoading) {
+        elements.loginBtn.classList.add('loading');
+        elements.loginBtn.disabled = true;
+        if (elements.loadingOverlay) {
+            elements.loadingOverlay.style.display = 'flex';
+        }
+    } else {
+        elements.loginBtn.classList.remove('loading');
+        elements.loginBtn.disabled = false;
+        if (elements.loadingOverlay) {
+            elements.loadingOverlay.style.display = 'none';
+        }
+    }
+}
+
+function shakeForm() {
+    elements.loginForm.style.animation = 'none';
+    setTimeout(() => {
+        elements.loginForm.style.animation = 'shake 0.5s';
+    }, 10);
+}
+
+// ========================================
+// Interactive Features
+// ========================================
+function togglePasswordVisibility() {
+    const isPassword = elements.passwordInput.type === 'password';
+    elements.passwordInput.type = isPassword ? 'text' : 'password';
+    elements.togglePasswordBtn.textContent = isPassword ? 'Hide' : 'Show';
+    console.log(`Password ${isPassword ? 'visible' : 'hidden'}`);
+}
+
+function handleRoleToggle(event) {
+    const clickedBtn = event.currentTarget;
+    const role = clickedBtn.dataset.role;
+    
+    elements.roleButtons.forEach(btn => btn.classList.remove('active'));
+    clickedBtn.classList.add('active');
+    elements.userRoleInput.value = role;
+    
+    const formTitle = document.querySelector('h2');
+    if (formTitle) {
+        formTitle.textContent = role === 'admin' ? 'Admin Portal' : 'Welcome Back';
+    }
+    
+    console.log(`Role changed to: ${role}`);
 }
 
 // ========================================
 // Session Management
 // ========================================
-
-/**
- * Load remembered username from session storage
- * Automatically fills username if user previously checked "Remember me"
- */
 function loadRememberedUsername() {
     const rememberedUsername = sessionStorage.getItem(CONFIG.STORAGE_KEY);
-    
     if (rememberedUsername) {
         elements.usernameInput.value = rememberedUsername;
         elements.rememberMeCheckbox.checked = true;
@@ -316,32 +328,9 @@ function loadRememberedUsername() {
     }
 }
 
-/**
- * Save username to session storage if "Remember me" is checked
- * @param {string} username - Username to remember
- * @param {boolean} shouldRemember - Whether to save username
- */
-function saveUsername(username, shouldRemember) {
-    if (shouldRemember) {
-        sessionStorage.setItem(CONFIG.STORAGE_KEY, username);
-        console.log('Username saved to session storage');
-    } else {
-        sessionStorage.removeItem(CONFIG.STORAGE_KEY);
-        console.log('Username removed from session storage');
-    }
-}
-
 // ========================================
-// Utility Functions
+// Utility
 // ========================================
-
-/**
- * Debounce function to limit rate of function calls
- * Prevents excessive validation calls during rapid typing
- * @param {Function} func - Function to debounce
- * @param {number} wait - Wait time in milliseconds
- * @returns {Function} Debounced function
- */
 function debounce(func, wait) {
     let timeout;
     return function executedFunction(...args) {
@@ -354,33 +343,26 @@ function debounce(func, wait) {
     };
 }
 
-// ========================================
-// Browser Auto-fill Detection
-// ========================================
-
-/**
- * Detect and validate browser auto-filled values
- * Runs validation after page load to handle auto-fill
- */
 window.addEventListener('load', () => {
     setTimeout(() => {
-        if (elements.usernameInput.value) {
-            validateUsername();
-        }
-        if (elements.passwordInput.value) {
-            validatePassword();
-        }
+        if (elements.usernameInput.value) validateUsername();
+        if (elements.passwordInput.value) validatePassword();
     }, 100);
 });
 
 // ========================================
-// Console Log Header
+// Keyboard Shortcuts
 // ========================================
+document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') hideAlert();
+    if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+        elements.loginForm.dispatchEvent(new Event('submit'));
+    }
+});
+
 console.log('==========================================');
-console.log('Login Page - Form Validation Module');
+console.log('Login Page - Complete with AJAX');
 console.log('Author: Cookie');
+console.log('Version: Final');
 console.log('==========================================');
-console.log('Validation Rules:');
-console.log(`- Username: ${CONFIG.MIN_USERNAME_LENGTH}-${CONFIG.MAX_USERNAME_LENGTH} chars, alphanumeric + underscore`);
-console.log(`- Password: ${CONFIG.MIN_PASSWORD_LENGTH}-${CONFIG.MAX_PASSWORD_LENGTH} chars`);
-console.log('==========================================');
+JSEOF

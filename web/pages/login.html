@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Food Ordering System</title>
+    <!-- 新增：引入CSS文件 -->
+    <link rel="stylesheet" href="../css/login.css">
 </head>
 <body>
     <div class="login-container">
@@ -21,7 +23,7 @@
         <p>Please enter your credentials to continue</p>
 
         <!-- Login Form -->
-        <form id="loginForm" method="POST" action="/login">
+        <form id="loginForm" class="login-form" method="POST" action="/login">
             <!-- Username Field -->
             <div>
                 <label for="username">Username</label>
@@ -33,7 +35,6 @@
                     autocomplete="username"
                     required
                 >
-                <!-- New: User name error prompt -->
                 <span class="error-message" id="usernameError"></span>
             </div>
 
@@ -49,16 +50,15 @@
                         autocomplete="current-password"
                         required
                     >
-                    <!-- New: Password display switch button -->
                     <button type="button" id="togglePassword">
                         Show
                     </button>
                 </div>
-                <!-- New: Password error prompt -->
                 <span class="error-message" id="passwordError"></span>
             </div>
 
-            <!-- New: Remember Me and Forgot Password -->
+
+            <!-- Remember Me and Forgot Password -->
             <div class="form-options">
                 <label>
                     <input type="checkbox" id="rememberMe" name="rememberMe">
@@ -69,18 +69,18 @@
 
             <!-- Hidden role fields -->
             <input type="hidden" id="userRole" name="userRole" value="user">
-
+            
             <!-- Submit Button -->
             <button type="submit" id="loginBtn">
                 Sign In
             </button>
 
-            <!-- New: Login error prompt area -->
+            <!-- Login error prompt area -->
             <div class="alert" id="loginAlert" style="display: none;">
                 <span class="alert-message"></span>
             </div>
 
-            <!-- New: Registration link -->
+            <!-- Registration link -->
             <div class="form-footer">
                 <p>Don't have an account? <a href="#">Sign up now</a></p>
             </div>

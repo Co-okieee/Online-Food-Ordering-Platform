@@ -7,6 +7,16 @@
 </head>
 <body>
     <div class="login-container">
+        <!-- New: Role switching button -->
+        <div class="role-toggle">
+            <button type="button" class="role-btn active" data-role="user">
+                Customer
+            </button>
+            <button type="button" class="role-btn" data-role="admin">
+                Administrator
+            </button>
+        </div>
+
         <h2>Welcome Back</h2>
         <p>Please enter your credentials to continue</p>
 
@@ -35,6 +45,9 @@
                     required
                 >
             </div>
+
+            <!-- New: Hidden role fields -->
+            <input type="hidden" id="userRole" name="userRole" value="user">
 
             <!-- Submit Button -->
             <button type="submit">Sign In</button>

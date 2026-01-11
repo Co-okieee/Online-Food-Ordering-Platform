@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Detail - Food Store</title>
+  <link rel="stylesheet" href="static/user.css">
+</head>
+<body>
+  <div class="container">
+    <div id="userbar">
+      <a href="index.html">← Back to Home</a>
+    </div>
+    <h1 id="pname">Classic Burger</h1>
+    <div id="pinfo"></div>
+    <form id="orderForm">
+      <input type="hidden" name="productId" id="pid">
+      <label>Quantity</label>
+      <input type="number" name="quantity" value="1" min="1" required>
+      <button type="submit">Place Order</button>
+    </form>
+    <div id="msg"></div>
+  </div>
+  
+  <script src="static/user.js"></script>
+</body>
+</html>

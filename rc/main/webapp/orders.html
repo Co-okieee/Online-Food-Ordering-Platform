@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Orders</title>
+  <link rel="stylesheet" href="static/styles.css">
+</head>
+<body>
+  <div class="container">
+    <div id="userbar">
+      <span id="userinfo"></span>
+      <button id="homeBtn">Back to Home</button>
+      <button id="logoutBtn">exit</button>
+    </div>
+    <h1>My Orders</h1>
+    <div id="orders"></div>
+  </div>
+  <script>
+    async function loadUser() {
+      const res = await fetch('me');
+      const data = await res.json();
+      if (!data.loggedIn) {
+        location.href = 'login.html';
+        return;
+      }
+      document.getElementById('userinfo').textContent = `Welcome, ${data.username} (${data.role})`;
+    }
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      const res = await fetch('logout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+        body: new URLSearchParams()
+      });
+      const data = await res.json();
+      if (data.success) location.href = 'login.html';
+    });
+    document.getElementById('homeBtn').addEventListener('click', () => {
+      location.href = 'index.html';
+    });
+    async function loadOrders() {
+      const res = await fetch('orders');
+      const list = await res.json();
+      const div = document.getElementById('orders');
+      div.innerHTML = '';
+      if (!Array.isArray(list) || list.length === 0) {
+        div.textContent = 'No orders';
+        return;
+      }
+      list.forEach(o => {
+        const wrap = document.createElement('div');
+        wrap.className = 'card';
+        const items = o.items.map(it => `${it.name} x ${it.quantity} (¥${it.price})`).join(', ');
+        wrap.innerHTML = `
+          <h3>Order ${o.orderId}</h3>
+          <p>Created At: ${o.createTime}</p>
+          <p>Items: ${items}</p>
+        `;
+        div.appendChild(wrap);
+      });
+    }
+    loadUser().then(loadOrders);
+  </script>
+</body>
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Order</title>
+  <link rel="stylesheet" href="static/styles.css">
+</head>
+<body>
+  <div class="container">
+    <div id="userbar">
+      <a href="index.html">Home</a>
+    </div>
+    <h1>Create Order</h1>
+    <form id="orderForm">
+      <label>Product ID</label>
+      <input type="number" name="productId" required>
+      <label>Quantity</label>
+      <input type="number" name="quantity" value="1" min="1" required>
+      <button type="submit">Submit</button>
+    </form>
+    <div id="msg"></div>
+  </div>
+  <script>
+    document.getElementById('orderForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const params = new URLSearchParams();
+      params.append('productId', form.productId.value);
+      params.append('quantity', form.quantity.value);
+      const res = await fetch('order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+        body: params
+      });
+      const data = await res.json();
+      if (data.success) {
+        document.getElementById('msg').textContent = 'Order placed. ID: ' + data.orderId;
+      } else {
+        document.getElementById('msg').textContent = 'Order failed';
+      }
+    });
+  </script>
+</body>
+</html>

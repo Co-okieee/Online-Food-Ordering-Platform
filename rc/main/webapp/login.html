@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login</title>
+  <link rel="stylesheet" href="static/styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>E-commerce Login</h1>
+    <form id="loginForm">
+      <label>Username</label>
+      <input type="text" name="username" required>
+      <label>Password</label>
+      <input type="password" name="password" required>
+      <button type="submit">Login</button>
+    </form>
+    <div id="loginMsg"></div>
+    <p><a href="register.html">No account? Register</a></p>
+  </div>
+  <script>
+    const form = document.getElementById('loginForm');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const params = new URLSearchParams();
+      params.append('username', form.username.value);
+      params.append('password', form.password.value);
+      const res = await fetch('login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+        body: params
+      });
+      const data = await res.json();
+      if (data.success) {
+        localStorage.setItem('role', data.role);
+        if (data.role === 'admin') {
+          location.href = 'admin.html';
+        } else {
+          location.href = 'index.html';
+        }
+      } else {
+        document.getElementById('loginMsg').textContent = 'Login failed';
+      }
+    });
+  </script>
+</body>
+</html>

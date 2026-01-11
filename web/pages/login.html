@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Food Store</title>
+  <link rel="stylesheet" href="static/login.css">
+</head>
+<body>
+  <div class="container">
+    <form id="loginForm">
+      <div class="role-selector">
+        <label>Login As:</label>
+        <div class="role-options">
+          <div class="role-option">
+            <input type="radio" id="roleCustomer" name="role" value="customer" checked>
+            <label for="roleCustomer">
+              <div class="role-title">Customer</div>
+            </label>
+          </div>
+          <div class="role-option">
+            <input type="radio" id="roleAdmin" name="role" value="admin">
+            <label for="roleAdmin">
+              <div class="role-title">Administrator</div>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <h1>Welcome Back</h1>
+      <p class="subtitle">Please enter your credentials to continue</p>
+
+      <label>Username</label>
+      <input type="text" name="username" required placeholder="Enter your username">
+      
+      <label>Password</label>
+      <input type="password" name="password" required placeholder="Enter your password">
+      
+      <div class="remember-forgot">
+        <label class="remember-me">
+          <input type="checkbox" name="remember">
+          <span>Remember me</span>
+        </label>
+        <a href="#" class="forgot-password">Forgot password?</a>
+      </div>
+
+      <button type="submit">Sign In</button>
+
+      <div class="register-link">
+        Don't have an account? <a href="register.html">Sign up now</a>
+      </div>
+    </form>
+    
+    <div id="loginMsg"></div>
+  </div>
+  
+  <script src="static/login.js"></script>
+</body>
+</html>

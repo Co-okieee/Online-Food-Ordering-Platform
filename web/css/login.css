@@ -1,0 +1,332 @@
+/* ================================
+   Authentication Pages Styles
+   (Login & Register)
+   ================================ */
+
+/* Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Body & Background */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+/* Container */
+.container {
+  max-width: 480px;
+  width: 100%;
+}
+
+/* Headings */
+h1 {
+  color: #333;
+  font-size: 36px;
+  margin-bottom: 15px;
+  text-align: center;
+  text-shadow: none;
+  font-weight: 700;
+}
+
+.subtitle {
+  color: #999;
+  font-size: 16px;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+/* Form Container (Both Login & Register) */
+#loginForm,
+#regForm {
+  background: white;
+  border-radius: 20px;
+  padding: 40px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  margin-bottom: 0;
+}
+
+/* Form Labels */
+#loginForm label,
+#regForm label {
+  display: block;
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+  margin-top: 20px;
+}
+
+#loginForm label:first-of-type,
+#regForm label:first-of-type {
+  margin-top: 0;
+}
+
+/* Form Inputs */
+#loginForm input[type="text"],
+#loginForm input[type="password"],
+#regForm input[type="text"],
+#regForm input[type="password"] {
+  width: 100%;
+  padding: 15px 20px;
+  font-size: 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 10px;
+  margin-bottom: 5px;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+#loginForm input:focus,
+#regForm input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* Role Selector */
+.role-selector {
+  margin: 0 0 25px 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+}
+
+.role-selector label {
+  display: none;
+}
+
+.role-selector-label {
+  display: block !important;
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 12px;
+}
+
+.role-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  background: #f0f0f0;
+  border-radius: 10px;
+  padding: 4px;
+}
+
+.role-option {
+  position: relative;
+}
+
+.role-option input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.role-option label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 20px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+  min-height: auto;
+  margin: 0;
+  color: #999;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.role-option input[type="radio"]:checked + label {
+  background: white;
+  color: #667eea;
+  border: none;
+  transform: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.role-option label:hover {
+  border: none;
+  transform: none;
+  color: #666;
+}
+
+.role-option input[type="radio"]:checked + label:hover {
+  color: #667eea;
+}
+
+.role-title {
+  font-weight: 600;
+  font-size: 16px;
+  margin-bottom: 0;
+}
+
+/* Remember Me & Forgot Password (Login Page Only) */
+.remember-forgot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 20px 0;
+}
+
+.remember-me {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #666;
+  font-size: 14px;
+}
+
+.remember-me input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.forgot-password {
+  color: #667eea;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.forgot-password:hover {
+  color: #764ba2;
+  text-decoration: underline;
+}
+
+/* Submit Buttons */
+#loginForm button,
+#regForm button {
+  width: 100%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 18px;
+  border-radius: 12px;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  letter-spacing: 0.5px;
+  margin-top: 0;
+}
+
+#regForm button {
+  margin-top: 25px;
+}
+
+#loginForm button:hover,
+#regForm button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+}
+
+#loginForm button:active,
+#regForm button:active {
+  transform: translateY(0);
+}
+
+/* Message Boxes */
+#loginMsg,
+#msg {
+  background: white;
+  border-radius: 15px;
+  padding: 20px;
+  text-align: center;
+  margin-top: 20px;
+  display: none;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+}
+
+#loginMsg.show,
+#msg.show {
+  display: block;
+  animation: slideIn 0.3s ease;
+}
+
+#loginMsg.error,
+#msg.error {
+  background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+  border-left: 5px solid #c62828;
+  color: #c62828;
+  font-weight: 600;
+}
+
+#loginMsg.success,
+#msg.success {
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+  border-left: 5px solid #2e7d32;
+  color: #2e7d32;
+  font-weight: 600;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Register & Login Links */
+.register-link,
+.login-link {
+  text-align: center;
+  background: transparent;
+  backdrop-filter: none;
+  padding: 20px 0 0 0;
+  border-radius: 0;
+  box-shadow: none;
+  color: #666;
+  font-size: 15px;
+}
+
+.register-link a,
+.login-link a {
+  color: #667eea;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 15px;
+  transition: all 0.3s ease;
+  margin-left: 5px;
+}
+
+.register-link a:hover,
+.login-link a:hover {
+  color: #764ba2;
+  text-decoration: underline;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  h1 {
+    font-size: 32px;
+  }
+
+  #loginForm,
+  #regForm {
+    padding: 30px 25px;
+  }
+
+  .role-options {
+    grid-template-columns: 1fr;
+  }
+}

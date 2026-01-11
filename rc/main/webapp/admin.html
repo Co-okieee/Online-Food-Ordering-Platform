@@ -38,7 +38,7 @@
       const hs = Array.from(document.querySelectorAll('h2'));
       hs.forEach(h => {
         const t = h.textContent.trim();
-        if (t.indexOf('修改商品') !== -1 || t.indexOf('删除商品') !== -1) {
+        if (t.indexOf('Edit Product') !== -1 || t.indexOf('Delete Product') !== -1) {
           const container = h.parentElement;
           if (container) container.remove();
         }
@@ -151,6 +151,7 @@
   </script>
 </body>
 </html>
+
 
 
 

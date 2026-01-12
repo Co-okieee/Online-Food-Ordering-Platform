@@ -70,11 +70,15 @@ h1 {
   margin-top: 0;
 }
 
-/* Form Inputs */
+/* Form Inputs - FIXED: Added email and tel types */
 #loginForm input[type="text"],
 #loginForm input[type="password"],
+#loginForm input[type="email"],
+#loginForm input[type="tel"],
 #regForm input[type="text"],
-#regForm input[type="password"] {
+#regForm input[type="password"],
+#regForm input[type="email"],
+#regForm input[type="tel"] {
   width: 100%;
   padding: 15px 20px;
   font-size: 16px;

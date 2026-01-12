@@ -9,6 +9,7 @@
 <body>
   <div class="container">
     <form id="regForm">
+      <!-- Role Selection -->
       <div class="role-selector">
         <label class="role-selector-label">Register As:</label>
         <div class="role-options">
@@ -30,11 +31,30 @@
       <h1>Create Account</h1>
       <p class="subtitle">Please fill in your information to register</p>
 
-      <label>Username</label>
-      <input type="text" name="username" required placeholder="Enter your username">
+      <!-- Username (REQUIRED) -->
+      <label>Username <span style="color: red;">*</span></label>
+      <input type="text" name="username" required 
+             placeholder="Enter your username (min 3 characters)">
       
-      <label>Password</label>
-      <input type="password" name="password" required placeholder="Enter your password">
+      <!-- Email (REQUIRED) -->
+      <label>Email <span style="color: red;">*</span></label>
+      <input type="email" name="email" required 
+             placeholder="Enter your email address">
+      
+      <!-- Full Name (OPTIONAL - removed required) -->
+      <label>Full Name</label>
+      <input type="text" name="fullName" 
+             placeholder="Enter your full name">
+      
+      <!-- Phone (OPTIONAL) -->
+      <label>Phone Number</label>
+      <input type="tel" name="phone" 
+             placeholder="Enter your phone number (optional)">
+      
+      <!-- Password (REQUIRED) -->
+      <label>Password <span style="color: red;">*</span></label>
+      <input type="password" name="password" required 
+             placeholder="Enter your password (min 6 characters)">
       
       <button type="submit">Sign Up</button>
 
@@ -46,6 +66,6 @@
     <div id="msg"></div>
   </div>
   
-  <script src="static/login.js"></script>
+  <script src="../js/login.js"></script>
 </body>
 </html>

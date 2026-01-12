@@ -4,11 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login - Food Store</title>
+  <!-- Correct path based on web/pages/login.html structure -->
   <link rel="stylesheet" href="../css/login.css">
 </head>
 <body>
   <div class="container">
     <form id="loginForm">
+      <!-- Role Selection -->
       <div class="role-selector">
         <label>Login As:</label>
         <div class="role-options">
@@ -30,12 +32,15 @@
       <h1>Welcome Back</h1>
       <p class="subtitle">Please enter your credentials to continue</p>
 
+      <!-- Username Input -->
       <label>Username</label>
       <input type="text" name="username" required placeholder="Enter your username">
       
+      <!-- Password Input -->
       <label>Password</label>
       <input type="password" name="password" required placeholder="Enter your password">
       
+      <!-- Remember Me & Forgot Password -->
       <div class="remember-forgot">
         <label class="remember-me">
           <input type="checkbox" name="remember">
@@ -44,16 +49,20 @@
         <a href="#" class="forgot-password">Forgot password?</a>
       </div>
 
+      <!-- Submit Button -->
       <button type="submit">Sign In</button>
 
+      <!-- Link to Register -->
       <div class="register-link">
         Don't have an account? <a href="register.html">Sign up now</a>
       </div>
     </form>
     
+    <!-- Message Display Area -->
     <div id="loginMsg"></div>
   </div>
   
-  <script src="static/login.js"></script>
+  <!-- Correct path: web/pages/ to web/js/ -->
+  <script src="../js/login.js"></script>
 </body>
 </html>

@@ -13,25 +13,45 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 /**
- * LoginServlet - 处理来自前端的登录请求，并调用认证服务
+ * LoginServlet - Handle login and registration requests from frontend
  * 
- * @author Your Name
- * @version 1.0
+ * Features:
+ * - User authentication (login)
+ * - User registration
+ * - Session management
+ * - Logout functionality
+ * - JSON response format
+ * 
  */
 @WebServlet("/LoginServlet")
 public class LoginServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     
+    // Service layer for authentication logic
     private AuthService authService;
     
+    /**
+     * Initialize servlet
+     * Create AuthService instance
+     */
     @Override
     public void init() throws ServletException {
-        // 初始化 Service
         authService = new AuthService();
+        System.out.println("[LoginServlet] Servlet initialized successfully");
     }
+    
+    // ========================================
+    // GET Request Handler
+    // ========================================
     
     /**
      * Handle GET requests
+     * Supports: logout, checkSession
+     * 
+     * @param request HTTP request
+     * @param response HTTP response
+     * @throws ServletException if servlet error occurs
+     * @throws IOException if I/O error occurs
      */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -51,14 +71,24 @@ public class LoginServlet extends HttpServlet {
                 checkSession(request, response);
                 break;
             default:
-                // ③ 至少 sendRedirect
-                response.sendRedirect("login.jsp");
+                // Redirect to login page for unknown actions
+                response.sendRedirect("pages/login.html");
                 break;
         }
     }
     
+    // ========================================
+    // POST Request Handler
+    // ========================================
+    
     /**
      * Handle POST requests
+     * Supports: login, register
+     * 
+     * @param request HTTP request
+     * @param response HTTP response
+     * @throws ServletException if servlet error occurs
+     * @throws IOException if I/O error occurs
      */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -66,11 +96,13 @@ public class LoginServlet extends HttpServlet {
         
         String action = request.getParameter("action");
         
-        // ③ 确认失败分支: 输出error
+        // Validate action parameter
         if (action == null || action.trim().isEmpty()) {
-            sendJsonResponse(response, false, "No action specified");
+            sendJsonResponse(response, false, "No action specified", null);
             return;
         }
+        
+        System.out.println("[LoginServlet] POST request - action: " + action);
         
         switch (action) {
             case "login":
@@ -80,148 +112,216 @@ public class LoginServlet extends HttpServlet {
                 handleRegister(request, response);
                 break;
             default:
-                // ③ 至少输出 error
-                sendJsonResponse(response, false, "Invalid action");
+                sendJsonResponse(response, false, "Invalid action", null);
                 break;
         }
     }
     
+    // ========================================
+    // Login Handler
+    // ========================================
+    
     /**
-     * Handle user login
+     * Handle user login request
+     * 
+     * @param request HTTP request containing username and password
+     * @param response HTTP response
+     * @throws ServletException if servlet error occurs
+     * @throws IOException if I/O error occurs
      */
     private void handleLogin(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
+        // Get parameters from request
         String username = request.getParameter("username");
         String password = request.getParameter("password");
         
-        // ③ 确认失败分支: 输出error
+        System.out.println("[LoginServlet] Login attempt: " + username);
+        
+        // Validate required parameters
         if (username == null || username.trim().isEmpty() ||
             password == null || password.trim().isEmpty()) {
-            sendJsonResponse(response, false, "Username and password are required");
+            sendJsonResponse(response, false, "Username and password are required", null);
             return;
         }
         
         try {
-            // 调用 AuthService 进行认证
+            // Authenticate user using AuthService
             User user = authService.authenticateUser(username, password);
             
             if (user != null) {
-                // 创建 session
+                // Authentication successful
+                // Create session and store user information
                 HttpSession session = request.getSession(true);
                 session.setAttribute("user", user);
                 session.setAttribute("userId", user.getUserId());
                 session.setAttribute("username", user.getUsername());
                 session.setAttribute("role", user.getRole());
-                session.setMaxInactiveInterval(30 * 60); // 30 minutes
+                session.setMaxInactiveInterval(30 * 60); // 30 minutes timeout
                 
-                // 返回成功响应
+                System.out.println("[LoginServlet] Login successful: " + username);
+                
+                // Send success response with user data
                 sendJsonResponse(response, true, "Login successful", user);
             } else {
-                // ③ 确认失败分支: 输出error
-                sendJsonResponse(response, false, "Invalid username or password");
+                // Authentication failed
+                System.out.println("[LoginServlet] Login failed: Invalid credentials");
+                sendJsonResponse(response, false, "Invalid username or password", null);
             }
             
         } catch (Exception e) {
+            // Handle unexpected errors
+            System.err.println("[LoginServlet] Login error: " + e.getMessage());
             e.printStackTrace();
-            // ③ 确认失败分支: 输出error
-            sendJsonResponse(response, false, "Login error: " + e.getMessage());
+            sendJsonResponse(response, false, "Login error: " + e.getMessage(), null);
         }
     }
     
+    // ========================================
+    // Registration Handler
+    // ========================================
+    
     /**
-     * Handle user registration
+     * Handle user registration request
+     * 
+     * @param request HTTP request containing user information
+     * @param response HTTP response
+     * @throws ServletException if servlet error occurs
+     * @throws IOException if I/O error occurs
      */
     private void handleRegister(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
+        // Get parameters from request
         String username = request.getParameter("username");
         String password = request.getParameter("password");
         String email = request.getParameter("email");
         String fullName = request.getParameter("fullName");
         String phone = request.getParameter("phone");
         
-        // ③ 确认失败分支: 输出error
+        System.out.println("[LoginServlet] Registration attempt: " + username);
+        
+        // Validate required parameters
         if (username == null || username.trim().isEmpty() ||
             password == null || password.trim().isEmpty() ||
             email == null || email.trim().isEmpty() ||
             fullName == null || fullName.trim().isEmpty()) {
-            sendJsonResponse(response, false, "All required fields must be filled");
+            sendJsonResponse(response, false, "All required fields must be filled", null);
             return;
         }
         
-        // ③ 确认失败分支: 输出error
+        // Validate username length
         if (username.length() < 3 || username.length() > 20) {
-            sendJsonResponse(response, false, "Username must be between 3 and 20 characters");
+            sendJsonResponse(response, false, "Username must be between 3 and 20 characters", null);
             return;
         }
         
-        // ③ 确认失败分支: 输出error
+        // Validate password length
         if (password.length() < 6) {
-            sendJsonResponse(response, false, "Password must be at least 6 characters");
+            sendJsonResponse(response, false, "Password must be at least 6 characters", null);
             return;
         }
         
         try {
-            // 调用 AuthService 进行注册
-            User user = authService.registerUser(username, password, email, fullName, phone);
+            // Register user using AuthService
+            User newUser = authService.registerUser(username, password, email, fullName, phone);
             
-            if (user != null) {
-                // 创建 session
+            if (newUser != null) {
+                // Registration successful
+                // Create session and log user in automatically
                 HttpSession session = request.getSession(true);
-                session.setAttribute("user", user);
-                session.setAttribute("userId", user.getUserId());
-                session.setAttribute("username", user.getUsername());
-                session.setAttribute("role", user.getRole());
+                session.setAttribute("user", newUser);
+                session.setAttribute("userId", newUser.getUserId());
+                session.setAttribute("username", newUser.getUsername());
+                session.setAttribute("role", newUser.getRole());
+                session.setMaxInactiveInterval(30 * 60); // 30 minutes timeout
                 
-                // 返回成功响应
-                sendJsonResponse(response, true, "Registration successful", user);
+                System.out.println("[LoginServlet] Registration successful: " + username);
+                
+                // Send success response with user data
+                sendJsonResponse(response, true, "Registration successful", newUser);
             } else {
-                // ③ 确认失败分支: 输出error
-                sendJsonResponse(response, false, "Registration failed: Username or email already exists");
+                // Registration failed
+                System.out.println("[LoginServlet] Registration failed: Username or email already exists");
+                sendJsonResponse(response, false, "Registration failed: Username or email already exists", null);
             }
             
         } catch (Exception e) {
+            // Handle unexpected errors
+            System.err.println("[LoginServlet] Registration error: " + e.getMessage());
             e.printStackTrace();
-            // ③ 确认失败分支: 输出error
-            sendJsonResponse(response, false, "Registration error: " + e.getMessage());
+            sendJsonResponse(response, false, "Registration error: " + e.getMessage(), null);
         }
     }
     
+    // ========================================
+    // Logout Handler
+    // ========================================
+    
     /**
-     * Handle user logout
+     * Handle user logout request
+     * Invalidate session and redirect to login page
+     * 
+     * @param request HTTP request
+     * @param response HTTP response
+     * @throws ServletException if servlet error occurs
+     * @throws IOException if I/O error occurs
      */
     private void handleLogout(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
+        // Get existing session (don't create new one)
         HttpSession session = request.getSession(false);
+        
         if (session != null) {
+            String username = (String) session.getAttribute("username");
             session.invalidate();
+            System.out.println("[LoginServlet] User logged out: " + username);
         }
         
-        // ③ 至少 sendRedirect
-        response.sendRedirect("login.jsp");
+        // Redirect to login page
+        response.sendRedirect("pages/login.html");
     }
+    
+    // ========================================
+    // Session Check Handler
+    // ========================================
     
     /**
      * Check if user session is active
+     * 
+     * @param request HTTP request
+     * @param response HTTP response
+     * @throws ServletException if servlet error occurs
+     * @throws IOException if I/O error occurs
      */
     private void checkSession(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
+        // Get existing session (don't create new one)
         HttpSession session = request.getSession(false);
         
         if (session != null && session.getAttribute("user") != null) {
+            // Session is active
             User user = (User) session.getAttribute("user");
             sendJsonResponse(response, true, "Session active", user);
         } else {
-            // ③ 确认失败分支: 输出error
-            sendJsonResponse(response, false, "No active session");
+            // No active session
+            sendJsonResponse(response, false, "No active session", null);
         }
     }
     
+    // ========================================
+    // JSON Response Helper Methods
+    // ========================================
+    
     /**
-     * Send JSON response
+     * Send JSON response without user data
+     * 
+     * @param response HTTP response
+     * @param success Success status (true/false)
+     * @param message Response message
+     * @throws IOException if I/O error occurs
      */
     private void sendJsonResponse(HttpServletResponse response, boolean success, String message)
             throws IOException {
@@ -230,13 +330,23 @@ public class LoginServlet extends HttpServlet {
     
     /**
      * Send JSON response with user data
+     * 
+     * Format: {success: true/false, message: "...", user: {...}}
+     * 
+     * @param response HTTP response
+     * @param success Success status (true/false)
+     * @param message Response message
+     * @param user User object (can be null)
+     * @throws IOException if I/O error occurs
      */
-    private void sendJsonResponse(HttpServletResponse response, boolean success, String message, User user)
-            throws IOException {
+    private void sendJsonResponse(HttpServletResponse response, boolean success, 
+                                 String message, User user) throws IOException {
         
+        // Set response content type to JSON
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
         
+        // Build JSON manually (no external libraries needed)
         PrintWriter out = response.getWriter();
         StringBuilder json = new StringBuilder();
         
@@ -244,6 +354,7 @@ public class LoginServlet extends HttpServlet {
         json.append("\"success\":").append(success).append(",");
         json.append("\"message\":\"").append(escapeJson(message)).append("\"");
         
+        // Add user data if available
         if (user != null) {
             json.append(",\"user\":{");
             json.append("\"userId\":").append(user.getUserId()).append(",");
@@ -257,19 +368,29 @@ public class LoginServlet extends HttpServlet {
         
         json.append("}");
         
+        // Send response
         out.print(json.toString());
         out.flush();
+        
+        System.out.println("[LoginServlet] JSON response sent: " + json.toString());
     }
     
     /**
      * Escape special characters for JSON
+     * Prevents JSON injection and formatting errors
+     * 
+     * @param str String to escape
+     * @return Escaped string safe for JSON
      */
     private String escapeJson(String str) {
-        if (str == null) return "";
-        return str.replace("\\", "\\\\")
-                  .replace("\"", "\\\"")
-                  .replace("\n", "\\n")
-                  .replace("\r", "\\r")
-                  .replace("\t", "\\t");
+        if (str == null) {
+            return "";
+        }
+        
+        return str.replace("\\", "\\\\")   // Backslash
+                  .replace("\"", "\\\"")   // Double quote
+                  .replace("\n", "\\n")    // Newline
+                  .replace("\r", "\\r")    // Carriage return
+                  .replace("\t", "\\t");   // Tab
     }
 }

@@ -3,66 +3,189 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login - Food Store</title>
-  <!-- Correct path based on web/pages/login.html structure -->
+  <title>Sign In - FoodHub</title>
   <link rel="stylesheet" href="../css/login.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-  <div class="container">
-    <form id="loginForm">
-      <!-- Role Selection -->
-      <div class="role-selector">
-        <label>Login As:</label>
-        <div class="role-options">
-          <div class="role-option">
-            <input type="radio" id="roleCustomer" name="role" value="customer" checked>
-            <label for="roleCustomer">
-              <div class="role-title">Customer</div>
-            </label>
+  <!-- Navigation Bar -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <div class="nav-left">
+        <a href="index.html" class="logo">
+          <span class="logo-icon">🍽️</span>
+          <span class="logo-text">FoodHub</span>
+        </a>
+      </div>
+      
+      <div class="nav-center">
+        <ul class="nav-menu">
+          <li><a href="index.html" class="nav-link">Home</a></li>
+          <li><a href="product.html" class="nav-link">Menu</a></li>
+          <li><a href="about.html" class="nav-link">About</a></li>
+          <li><a href="contact.html" class="nav-link">Contact</a></li>
+        </ul>
+      </div>
+      
+      <div class="nav-right">
+        <a href="register.html" class="btn-register">Sign Up</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Login Section -->
+  <section class="auth-section">
+    <div class="auth-container">
+      <!-- Left Side: Image/Info -->
+      <div class="auth-visual">
+        <div class="visual-content">
+          <h2 class="visual-title">Welcome Back!</h2>
+          <p class="visual-subtitle">Sign in to continue your delicious journey with FoodHub</p>
+          
+          <div class="visual-features">
+            <div class="visual-feature">
+              <span class="feature-icon">🍕</span>
+              <span class="feature-text">Order from 50+ restaurants</span>
+            </div>
+            <div class="visual-feature">
+              <span class="feature-icon">⚡</span>
+              <span class="feature-text">30-minute delivery guarantee</span>
+            </div>
+            <div class="visual-feature">
+              <span class="feature-icon">💳</span>
+              <span class="feature-text">Secure payment options</span>
+            </div>
           </div>
-          <div class="role-option">
-            <input type="radio" id="roleAdmin" name="role" value="admin">
-            <label for="roleAdmin">
-              <div class="role-title">Administrator</div>
-            </label>
+          
+          <div class="food-emojis">
+            <span class="emoji floating">🍔</span>
+            <span class="emoji floating" style="animation-delay: 0.2s;">🍜</span>
+            <span class="emoji floating" style="animation-delay: 0.4s;">🍰</span>
+            <span class="emoji floating" style="animation-delay: 0.6s;">🥗</span>
           </div>
         </div>
       </div>
 
-      <h1>Welcome Back</h1>
-      <p class="subtitle">Please enter your credentials to continue</p>
+      <!-- Right Side: Login Form -->
+      <div class="auth-form-wrapper">
+        <div class="auth-form-container">
+          <div class="form-header">
+            <h1 class="form-title">Sign In</h1>
+            <p class="form-subtitle">Enter your credentials to access your account</p>
+          </div>
 
-      <!-- Username Input -->
-      <label>Username</label>
-      <input type="text" name="username" required placeholder="Enter your username">
-      
-      <!-- Password Input -->
-      <label>Password</label>
-      <input type="password" name="password" required placeholder="Enter your password">
-      
-      <!-- Remember Me & Forgot Password -->
-      <div class="remember-forgot">
-        <label class="remember-me">
-          <input type="checkbox" name="remember">
-          <span>Remember me</span>
-        </label>
-        <a href="#" class="forgot-password">Forgot password?</a>
+          <!-- Role Selection -->
+          <div class="role-selector">
+            <label class="role-label">Login As:</label>
+            <div class="role-options">
+              <label class="role-option">
+                <input type="radio" name="role" value="customer" checked>
+                <div class="role-card">
+                  <span class="role-icon">👤</span>
+                  <span class="role-name">Customer</span>
+                </div>
+              </label>
+              
+              <label class="role-option">
+                <input type="radio" name="role" value="admin">
+                <div class="role-card">
+                  <span class="role-icon">🔑</span>
+                  <span class="role-name">Admin</span>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <form id="loginForm" class="auth-form">
+            <!-- Username Input -->
+            <div class="form-group">
+              <label for="username">Username</label>
+              <div class="input-wrapper">
+                <span class="input-icon">👤</span>
+                <input type="text" id="username" name="username" required 
+                       placeholder="Enter your username">
+              </div>
+            </div>
+            
+            <!-- Password Input -->
+            <div class="form-group">
+              <label for="password">Password</label>
+              <div class="input-wrapper">
+                <span class="input-icon">🔒</span>
+                <input type="password" id="password" name="password" required 
+                       placeholder="Enter your password">
+              </div>
+            </div>
+            
+            <!-- Remember Me & Forgot Password -->
+            <div class="form-options">
+              <label class="checkbox-wrapper">
+                <input type="checkbox" name="remember">
+                <span class="checkbox-label">Remember me</span>
+              </label>
+              <a href="#" class="forgot-link">Forgot password?</a>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="btn-submit">
+              <span>Sign In</span>
+              <span class="btn-arrow">→</span>
+            </button>
+
+            <!-- Message Display -->
+            <div id="loginMsg" class="message-box"></div>
+
+            <!-- Register Link -->
+            <div class="form-footer">
+              <p>Don't have an account? <a href="register.html" class="auth-link">Sign up now</a></p>
+            </div>
+          </form>
+        </div>
       </div>
+    </div>
+  </section>
 
-      <!-- Submit Button -->
-      <button type="submit">Sign In</button>
-
-      <!-- Link to Register -->
-      <div class="register-link">
-        Don't have an account? <a href="register.html">Sign up now</a>
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3 class="footer-title">
+            <span class="logo-icon">🍽️</span>
+            FoodHub
+          </h3>
+          <p class="footer-text">
+            Bringing delicious food to your doorstep since 2024.
+          </p>
+        </div>
+        
+        <div class="footer-section">
+          <h4 class="footer-heading">Quick Links</h4>
+          <ul class="footer-links">
+            <li><a href="product.html">Menu</a></li>
+            <li><a href="about.html">About Us</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-section">
+          <h4 class="footer-heading">Legal</h4>
+          <ul class="footer-links">
+            <li><a href="#">Privacy Policy</a></li>
+            <li><a href="#">Terms of Service</a></li>
+          </ul>
+        </div>
       </div>
-    </form>
-    
-    <!-- Message Display Area -->
-    <div id="loginMsg"></div>
-  </div>
-  
-  <!-- Correct path: web/pages/ to web/js/ -->
+      
+      <div class="footer-bottom">
+        <p>&copy; 2024 FoodHub. All rights reserved. | Created for CAT201 Project</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- JavaScript -->
   <script src="../js/login.js"></script>
 </body>
 </html>

@@ -4,6 +4,10 @@ import model.Order;
 import model.OrderItem;
 import model.User;
 import service.OrderService;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -11,489 +15,446 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * OrderServlet - 处理订单相关的前端请求与订单流程
- * 
- * @author Your Name
- * @version 1.0
+ * Order Servlet
+ * Handles order operations (create, list, update status, cancel)
+ *
+ * Supported Actions:
+ * - create: Create new order
+ * - list: Get user's orders
+ * - listAll: Get all orders (admin only)
+ * - get: Get order by ID
+ * - updateStatus: Update order status (admin only)
+ * - cancel: Cancel order
  */
 @WebServlet("/OrderServlet")
 public class OrderServlet extends HttpServlet {
-    private static final long serialVersionUID = 1L;
-    
+
     private OrderService orderService;
-    
+    private Gson gson;
+
     @Override
     public void init() throws ServletException {
-        // 初始化 Service
         orderService = new OrderService();
+        gson = new Gson();
     }
-    
-    /**
-     * Handle GET requests
-     */
+
+    // ================================
+    // GET Request Handler
+    // ================================
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
+        response.setContentType("application/json;charset=UTF-8");
+
         String action = request.getParameter("action");
-        
+
         if (action == null) {
-            action = "list";
-        }
-        
-        // Check if user is logged in
-        HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("userId") == null) {
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Please login to view orders");
+            sendErrorResponse(response, "Action parameter is required");
             return;
         }
-        
+
+        // Check authentication
+        if (!isLoggedIn(request)) {
+            sendErrorResponse(response, "Unauthorized - Please login");
+            return;
+        }
+
         switch (action) {
             case "list":
-                listUserOrders(request, response);
+                handleListOrders(request, response);
                 break;
-            case "details":
-                getOrderDetails(request, response);
+            case "listAll":
+                handleListAllOrders(request, response);
                 break;
-            case "adminList":
-                // ② 确认 Admin 判断
-                User user = (User) session.getAttribute("user");
-                if (user == null || !user.isAdmin()) {
-                    response.sendError(HttpServletResponse.SC_FORBIDDEN, "Admin access required");
-                    return;
-                }
-                listAllOrders(request, response);
+            case "get":
+                handleGetOrder(request, response);
                 break;
             default:
-                listUserOrders(request, response);
-                break;
+                sendErrorResponse(response, "Invalid action: " + action);
         }
     }
-    
-    /**
-     * Handle POST requests
-     */
+
+    // ================================
+    // POST Request Handler
+    // ================================
+
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
+        request.setCharacterEncoding("UTF-8");
+        response.setContentType("application/json;charset=UTF-8");
+
         String action = request.getParameter("action");
-        
-        if (action == null || action.trim().isEmpty()) {
-            sendJsonResponse(response, false, "No action specified");
+
+        if (action == null) {
+            sendErrorResponse(response, "Action parameter is required");
             return;
         }
-        
-        // Check if user is logged in
-        HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("userId") == null) {
-            sendJsonResponse(response, false, "Please login to perform this action");
+
+        // Check authentication
+        if (!isLoggedIn(request)) {
+            sendErrorResponse(response, "Unauthorized - Please login");
             return;
         }
-        
+
         switch (action) {
             case "create":
-                createOrder(request, response);
-                break;
-            case "cancel":
-                cancelOrder(request, response);
+                handleCreateOrder(request, response);
                 break;
             case "updateStatus":
-                // ② 确认 Admin 判断
-                User user = (User) session.getAttribute("user");
-                if (user == null || !user.isAdmin()) {
-                    response.sendError(HttpServletResponse.SC_FORBIDDEN, "Admin access required");
-                    return;
-                }
-                updateOrderStatus(request, response);
+                handleUpdateOrderStatus(request, response);
+                break;
+            case "cancel":
+                handleCancelOrder(request, response);
                 break;
             default:
-                sendJsonResponse(response, false, "Invalid action");
-                break;
+                sendErrorResponse(response, "Invalid action: " + action);
         }
     }
-    
-    /**
-     * Create new order
-     */
-    private void createOrder(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        
-        HttpSession session = request.getSession();
-        Integer userId = (Integer) session.getAttribute("userId");
-        
-        String deliveryAddress = request.getParameter("deliveryAddress");
-        String paymentMethod = request.getParameter("paymentMethod");
-        String notes = request.getParameter("notes");
-        String itemsJson = request.getParameter("items");
-        
-        if (deliveryAddress == null || deliveryAddress.trim().isEmpty()) {
-            sendJsonResponse(response, false, "Delivery address is required");
+
+    // ================================
+    // Create Order Handler
+    // ================================
+
+    private void handleCreateOrder(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+
+        HttpSession session = request.getSession(false);
+        int userId = (Integer) session.getAttribute("userId");
+
+        // Read JSON from request body
+        StringBuilder sb = new StringBuilder();
+        BufferedReader reader = request.getReader();
+        String line;
+        while ((line = reader.readLine()) != null) {
+            sb.append(line);
+        }
+
+        String jsonString = sb.toString();
+
+        if (jsonString == null || jsonString.trim().isEmpty()) {
+            sendErrorResponse(response, "Request body is empty");
             return;
         }
-        
-        if (paymentMethod == null || paymentMethod.trim().isEmpty()) {
-            sendJsonResponse(response, false, "Payment method is required");
-            return;
-        }
-        
-        if (itemsJson == null || itemsJson.trim().isEmpty()) {
-            sendJsonResponse(response, false, "Order items are required");
-            return;
-        }
-        
+
         try {
-            // Parse items
-            List<OrderItem> items = parseOrderItems(itemsJson);
-            
-            if (items.isEmpty()) {
-                sendJsonResponse(response, false, "No valid items in order");
+            // Parse JSON
+            JsonObject jsonObject = JsonParser.parseString(jsonString).getAsJsonObject();
+
+            String deliveryAddress = jsonObject.get("deliveryAddress").getAsString();
+            String paymentMethod = jsonObject.get("paymentMethod").getAsString();
+            double totalAmount = jsonObject.get("totalAmount").getAsDouble();
+            String notes = jsonObject.has("notes") ? jsonObject.get("notes").getAsString() : "";
+
+            JsonArray itemsArray = jsonObject.getAsJsonArray("items");
+
+            // Validate
+            if (deliveryAddress == null || deliveryAddress.trim().isEmpty()) {
+                sendErrorResponse(response, "Delivery address is required");
                 return;
             }
-            
-            // 调用 OrderService 创建订单
-            int orderId = orderService.createOrder(userId, deliveryAddress, paymentMethod, notes, items);
-            
-            if (orderId > 0) {
-                sendJsonResponse(response, true, "Order created successfully (Order ID: " + orderId + ")");
-            } else {
-                sendJsonResponse(response, false, "Failed to create order");
-            }
-            
-        } catch (Exception e) {
-            e.printStackTrace();
-            sendJsonResponse(response, false, "Error creating order: " + e.getMessage());
-        }
-    }
-    
-    /**
-     * List user's orders
-     */
-    private void listUserOrders(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        
-        HttpSession session = request.getSession();
-        Integer userId = (Integer) session.getAttribute("userId");
-        
-        try {
-            List<Order> orders = orderService.getUserOrders(userId);
-            sendOrderListResponse(response, true, "Orders retrieved successfully", orders);
-            
-        } catch (Exception e) {
-            e.printStackTrace();
-            sendJsonResponse(response, false, "Error retrieving orders: " + e.getMessage());
-        }
-    }
-    
-    /**
-     * List all orders (Admin only)
-     */
-    private void listAllOrders(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        
-        try {
-            List<Order> orders = orderService.getAllOrders();
-            sendOrderListResponse(response, true, "All orders retrieved successfully", orders);
-            
-        } catch (Exception e) {
-            e.printStackTrace();
-            sendJsonResponse(response, false, "Error retrieving orders: " + e.getMessage());
-        }
-    }
-    
-    /**
-     * Get order details with items
-     */
-    private void getOrderDetails(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        
-        String orderIdStr = request.getParameter("orderId");
-        
-        if (orderIdStr == null || orderIdStr.trim().isEmpty()) {
-            sendJsonResponse(response, false, "Order ID is required");
-            return;
-        }
-        
-        try {
-            int orderId = Integer.parseInt(orderIdStr);
-            HttpSession session = request.getSession();
-            Integer userId = (Integer) session.getAttribute("userId");
-            User user = (User) session.getAttribute("user");
-            boolean isAdmin = (user != null && user.isAdmin());
-            
-            // 调用 OrderService 获取订单
-            Order order = orderService.getOrderWithItems(orderId, userId, isAdmin);
-            
-            if (order == null) {
-                sendJsonResponse(response, false, "Order not found or unauthorized");
+
+            if (itemsArray == null || itemsArray.size() == 0) {
+                sendErrorResponse(response, "Order must contain at least one item");
                 return;
             }
-            
-            // 获取订单项
-            List<OrderItem> items = orderService.getOrderItems(orderId);
-            
-            sendOrderDetailsResponse(response, true, "Order details retrieved", order, items);
-            
-        } catch (NumberFormatException e) {
-            sendJsonResponse(response, false, "Invalid order ID format");
+
+            // Create Order object
+            Order order = new Order(userId, totalAmount, deliveryAddress, paymentMethod, notes);
+
+            // Create OrderItem objects
+            List<OrderItem> orderItems = new ArrayList<>();
+
+            for (int i = 0; i < itemsArray.size(); i++) {
+                JsonObject itemObj = itemsArray.get(i).getAsJsonObject();
+
+                int productId = itemObj.get("productId").getAsInt();
+                int quantity = itemObj.get("quantity").getAsInt();
+                double unitPrice = itemObj.get("unitPrice").getAsDouble();
+
+                OrderItem item = new OrderItem(0, productId, quantity, unitPrice);
+                orderItems.add(item);
+            }
+
+            // Create order
+            Order createdOrder = orderService.createOrder(order, orderItems);
+
+            if (createdOrder != null) {
+                JsonObject jsonResponse = new JsonObject();
+                jsonResponse.addProperty("success", true);
+                jsonResponse.addProperty("message", "Order placed successfully");
+                jsonResponse.addProperty("orderId", createdOrder.getOrderId());
+                jsonResponse.add("order", gson.toJsonTree(createdOrder));
+
+                sendJsonResponse(response, jsonResponse);
+            } else {
+                sendErrorResponse(response, "Failed to create order - Check stock availability");
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
-            sendJsonResponse(response, false, "Error retrieving order: " + e.getMessage());
+            sendErrorResponse(response, "Error processing order: " + e.getMessage());
         }
     }
-    
-    /**
-     * Cancel order
-     */
-    private void cancelOrder(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        
-        String orderIdStr = request.getParameter("orderId");
-        
-        if (orderIdStr == null || orderIdStr.trim().isEmpty()) {
-            sendJsonResponse(response, false, "Order ID is required");
+
+    // ================================
+    // List Orders Handler
+    // ================================
+
+    private void handleListOrders(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+
+        HttpSession session = request.getSession(false);
+        int userId = (Integer) session.getAttribute("userId");
+
+        String status = request.getParameter("status");
+
+        List<Order> orders;
+
+        if (status != null && !status.isEmpty() && !status.equals("all")) {
+            // Filter by status
+            orders = orderService.getOrdersByStatus(status);
+            // Filter to only this user's orders
+            orders.removeIf(order -> order.getUserId() != userId);
+        } else {
+            // Get all orders for this user
+            orders = orderService.getOrdersByUserId(userId);
+        }
+
+        if (orders != null) {
+            JsonObject jsonResponse = new JsonObject();
+            jsonResponse.addProperty("success", true);
+            jsonResponse.add("orders", gson.toJsonTree(orders));
+
+            sendJsonResponse(response, jsonResponse);
+        } else {
+            sendErrorResponse(response, "Failed to retrieve orders");
+        }
+    }
+
+    // ================================
+    // List All Orders Handler (Admin only)
+    // ================================
+
+    private void handleListAllOrders(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+
+        // Check admin permission
+        if (!isAdmin(request)) {
+            sendErrorResponse(response, "Unauthorized - Admin access required");
             return;
         }
-        
-        try {
-            int orderId = Integer.parseInt(orderIdStr);
-            HttpSession session = request.getSession();
-            Integer userId = (Integer) session.getAttribute("userId");
-            
-            // 调用 OrderService 取消订单
-            boolean cancelled = orderService.cancelOrder(orderId, userId);
-            
-            if (cancelled) {
-                sendJsonResponse(response, true, "Order cancelled successfully");
-            } else {
-                sendJsonResponse(response, false, "Failed to cancel order");
-            }
-            
-        } catch (NumberFormatException e) {
-            sendJsonResponse(response, false, "Invalid order ID format");
-        } catch (Exception e) {
-            e.printStackTrace();
-            sendJsonResponse(response, false, "Error cancelling order: " + e.getMessage());
+
+        String status = request.getParameter("status");
+
+        List<Order> orders;
+
+        if (status != null && !status.isEmpty() && !status.equals("all")) {
+            orders = orderService.getOrdersByStatus(status);
+        } else {
+            orders = orderService.getAllOrders();
+        }
+
+        if (orders != null) {
+            JsonObject jsonResponse = new JsonObject();
+            jsonResponse.addProperty("success", true);
+            jsonResponse.add("orders", gson.toJsonTree(orders));
+
+            sendJsonResponse(response, jsonResponse);
+        } else {
+            sendErrorResponse(response, "Failed to retrieve orders");
         }
     }
-    
-    /**
-     * Update order status (Admin only)
-     */
-    private void updateOrderStatus(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        
+
+    // ================================
+    // Get Order Handler
+    // ================================
+
+    private void handleGetOrder(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+
+        String orderIdStr = request.getParameter("orderId");
+
+        if (orderIdStr == null || orderIdStr.trim().isEmpty()) {
+            sendErrorResponse(response, "Order ID is required");
+            return;
+        }
+
+        try {
+            int orderId = Integer.parseInt(orderIdStr);
+            Order order = orderService.getOrderById(orderId);
+
+            if (order != null) {
+                // Check authorization - user can only view their own orders
+                HttpSession session = request.getSession(false);
+                int userId = (Integer) session.getAttribute("userId");
+
+                if (order.getUserId() != userId && !isAdmin(request)) {
+                    sendErrorResponse(response, "Unauthorized - Cannot view other user's orders");
+                    return;
+                }
+
+                JsonObject jsonResponse = new JsonObject();
+                jsonResponse.addProperty("success", true);
+                jsonResponse.add("order", gson.toJsonTree(order));
+
+                sendJsonResponse(response, jsonResponse);
+            } else {
+                sendErrorResponse(response, "Order not found");
+            }
+
+        } catch (NumberFormatException e) {
+            sendErrorResponse(response, "Invalid order ID format");
+        }
+    }
+
+    // ================================
+    // Update Order Status Handler (Admin only)
+    // ================================
+
+    private void handleUpdateOrderStatus(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+
+        // Check admin permission
+        if (!isAdmin(request)) {
+            sendErrorResponse(response, "Unauthorized - Admin access required");
+            return;
+        }
+
         String orderIdStr = request.getParameter("orderId");
         String newStatus = request.getParameter("status");
-        
-        if (orderIdStr == null || orderIdStr.trim().isEmpty()) {
-            sendJsonResponse(response, false, "Order ID is required");
+
+        if (orderIdStr == null || orderIdStr.trim().isEmpty() ||
+                newStatus == null || newStatus.trim().isEmpty()) {
+            sendErrorResponse(response, "Order ID and status are required");
             return;
         }
-        
-        if (newStatus == null || newStatus.trim().isEmpty()) {
-            sendJsonResponse(response, false, "New status is required");
-            return;
-        }
-        
+
         try {
             int orderId = Integer.parseInt(orderIdStr);
-            
-            // 调用 OrderService 更新状态
-            boolean updated = orderService.updateOrderStatus(orderId, newStatus);
-            
-            if (updated) {
-                sendJsonResponse(response, true, "Order status updated successfully");
+            boolean success = orderService.updateOrderStatus(orderId, newStatus);
+
+            if (success) {
+                JsonObject jsonResponse = new JsonObject();
+                jsonResponse.addProperty("success", true);
+                jsonResponse.addProperty("message", "Order status updated successfully");
+
+                sendJsonResponse(response, jsonResponse);
             } else {
-                sendJsonResponse(response, false, "Failed to update order status");
+                sendErrorResponse(response, "Failed to update order status");
             }
-            
+
         } catch (NumberFormatException e) {
-            sendJsonResponse(response, false, "Invalid order ID format");
-        } catch (Exception e) {
-            e.printStackTrace();
-            sendJsonResponse(response, false, "Error updating order status: " + e.getMessage());
+            sendErrorResponse(response, "Invalid order ID format");
         }
     }
-    
-    /**
-     * Parse order items from JSON string (simplified)
-     */
-    private List<OrderItem> parseOrderItems(String itemsJson) {
-        List<OrderItem> items = new ArrayList<>();
-        
-        itemsJson = itemsJson.trim();
-        if (itemsJson.startsWith("[") && itemsJson.endsWith("]")) {
-            itemsJson = itemsJson.substring(1, itemsJson.length() - 1);
-            
-            String[] itemStrings = itemsJson.split("\\},\\{");
-            
-            for (String itemStr : itemStrings) {
-                itemStr = itemStr.replace("{", "").replace("}", "").trim();
-                
-                try {
-                    int productId = 0;
-                    int quantity = 0;
-                    
-                    String[] pairs = itemStr.split(",");
-                    for (String pair : pairs) {
-                        String[] keyValue = pair.split(":");
-                        if (keyValue.length == 2) {
-                            String key = keyValue[0].trim().replace("\"", "");
-                            String value = keyValue[1].trim().replace("\"", "");
-                            
-                            if ("productId".equals(key)) {
-                                productId = Integer.parseInt(value);
-                            } else if ("quantity".equals(key)) {
-                                quantity = Integer.parseInt(value);
-                            }
-                        }
-                    }
-                    
-                    if (productId > 0 && quantity > 0) {
-                        OrderItem item = new OrderItem();
-                        item.setProductId(productId);
-                        item.setQuantity(quantity);
-                        items.add(item);
-                    }
-                    
-                } catch (NumberFormatException e) {
-                    continue;
-                }
-            }
-        }
-        
-        return items;
-    }
-    
-    /**
-     * Send JSON response for order list
-     */
-    private void sendOrderListResponse(HttpServletResponse response, boolean success, String message, List<Order> orders)
+
+    // ================================
+    // Cancel Order Handler
+    // ================================
+
+    private void handleCancelOrder(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
-        
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-        
-        PrintWriter out = response.getWriter();
-        StringBuilder json = new StringBuilder();
-        
-        json.append("{");
-        json.append("\"success\":").append(success).append(",");
-        json.append("\"message\":\"").append(escapeJson(message)).append("\",");
-        json.append("\"count\":").append(orders.size()).append(",");
-        json.append("\"orders\":[");
-        
-        for (int i = 0; i < orders.size(); i++) {
-            json.append(orderToJson(orders.get(i)));
-            if (i < orders.size() - 1) {
-                json.append(",");
-            }
+
+        String orderIdStr = request.getParameter("orderId");
+
+        if (orderIdStr == null || orderIdStr.trim().isEmpty()) {
+            sendErrorResponse(response, "Order ID is required");
+            return;
         }
-        
-        json.append("]}");
-        
-        out.print(json.toString());
-        out.flush();
-    }
-    
-    /**
-     * Send JSON response for order details with items
-     */
-    private void sendOrderDetailsResponse(HttpServletResponse response, boolean success, String message, 
-                                         Order order, List<OrderItem> items) throws IOException {
-        
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-        
-        PrintWriter out = response.getWriter();
-        StringBuilder json = new StringBuilder();
-        
-        json.append("{");
-        json.append("\"success\":").append(success).append(",");
-        json.append("\"message\":\"").append(escapeJson(message)).append("\",");
-        json.append("\"order\":").append(orderToJson(order)).append(",");
-        json.append("\"items\":[");
-        
-        for (int i = 0; i < items.size(); i++) {
-            json.append(orderItemToJson(items.get(i)));
-            if (i < items.size() - 1) {
-                json.append(",");
+
+        try {
+            int orderId = Integer.parseInt(orderIdStr);
+
+            // Check authorization
+            Order order = orderService.getOrderById(orderId);
+
+            if (order == null) {
+                sendErrorResponse(response, "Order not found");
+                return;
             }
+
+            HttpSession session = request.getSession(false);
+            int userId = (Integer) session.getAttribute("userId");
+
+            if (order.getUserId() != userId && !isAdmin(request)) {
+                sendErrorResponse(response, "Unauthorized - Cannot cancel other user's orders");
+                return;
+            }
+
+            // Cancel order
+            boolean success = orderService.cancelOrder(orderId);
+
+            if (success) {
+                JsonObject jsonResponse = new JsonObject();
+                jsonResponse.addProperty("success", true);
+                jsonResponse.addProperty("message", "Order cancelled successfully");
+
+                sendJsonResponse(response, jsonResponse);
+            } else {
+                sendErrorResponse(response, "Failed to cancel order");
+            }
+
+        } catch (NumberFormatException e) {
+            sendErrorResponse(response, "Invalid order ID format");
         }
-        
-        json.append("]}");
-        
-        out.print(json.toString());
-        out.flush();
     }
-    
+
+    // ================================
+    // Helper Methods
+    // ================================
+
     /**
-     * Convert Order object to JSON string
+     * Check if user is logged in
      */
-    private String orderToJson(Order order) {
-        StringBuilder json = new StringBuilder();
-        json.append("{");
-        json.append("\"orderId\":").append(order.getOrderId()).append(",");
-        json.append("\"userId\":").append(order.getUserId()).append(",");
-        json.append("\"orderDate\":\"").append(order.getOrderDate()).append("\",");
-        json.append("\"totalAmount\":").append(order.getTotalAmount()).append(",");
-        json.append("\"status\":\"").append(escapeJson(order.getStatus())).append("\",");
-        json.append("\"statusDisplay\":\"").append(escapeJson(order.getStatusDisplay())).append("\",");
-        json.append("\"deliveryAddress\":\"").append(escapeJson(order.getDeliveryAddress())).append("\",");
-        json.append("\"paymentMethod\":\"").append(escapeJson(order.getPaymentMethod())).append("\",");
-        json.append("\"paymentStatus\":\"").append(escapeJson(order.getPaymentStatus())).append("\",");
-        json.append("\"notes\":\"").append(escapeJson(order.getNotes() != null ? order.getNotes() : "")).append("\",");
-        json.append("\"canBeCancelled\":").append(order.canBeCancelled());
-        json.append("}");
-        return json.toString();
+    private boolean isLoggedIn(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        return session != null && session.getAttribute("userId") != null;
     }
-    
+
     /**
-     * Convert OrderItem object to JSON string
+     * Check if current user is admin
      */
-    private String orderItemToJson(OrderItem item) {
-        StringBuilder json = new StringBuilder();
-        json.append("{");
-        json.append("\"orderItemId\":").append(item.getOrderItemId()).append(",");
-        json.append("\"orderId\":").append(item.getOrderId()).append(",");
-        json.append("\"productId\":").append(item.getProductId()).append(",");
-        json.append("\"quantity\":").append(item.getQuantity()).append(",");
-        json.append("\"unitPrice\":").append(item.getUnitPrice()).append(",");
-        json.append("\"subtotal\":").append(item.getSubtotal());
-        json.append("}");
-        return json.toString();
+    private boolean isAdmin(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+
+        if (session != null && session.getAttribute("role") != null) {
+            String role = (String) session.getAttribute("role");
+            return "admin".equalsIgnoreCase(role);
+        }
+
+        return false;
     }
-    
+
     /**
-     * Send simple JSON response
+     * Send JSON response
      */
-    private void sendJsonResponse(HttpServletResponse response, boolean success, String message)
+    private void sendJsonResponse(HttpServletResponse response, JsonObject jsonObject)
             throws IOException {
-        
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-        
         PrintWriter out = response.getWriter();
-        out.print("{\"success\":" + success + ",\"message\":\"" + escapeJson(message) + "\"}");
+        out.print(jsonObject.toString());
         out.flush();
     }
-    
+
     /**
-     * Escape special characters for JSON
+     * Send error response
      */
-    private String escapeJson(String str) {
-        if (str == null) return "";
-        return str.replace("\\", "\\\\")
-                  .replace("\"", "\\\"")
-                  .replace("\n", "\\n")
-                  .replace("\r", "\\r")
-                  .replace("\t", "\\t");
+    private void sendErrorResponse(HttpServletResponse response, String message)
+            throws IOException {
+        JsonObject jsonResponse = new JsonObject();
+        jsonResponse.addProperty("success", false);
+        jsonResponse.addProperty("message", message);
+
+        sendJsonResponse(response, jsonResponse);
     }
 }

@@ -1,276 +1,478 @@
 package service;
 
 import dao.OrderDAO;
-import dao.ProductDAO;
+import dao.OrderItemDAO;
 import model.Order;
-import model.Product;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
+import model.OrderItem;
+import java.sql.SQLException;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Order Service Class
- * Responsibility: Handle order-related business logic and calculation
+ * Handles business logic for order operations
+ * Including order creation, status updates, order retrieval
  */
 public class OrderService {
+    
     private OrderDAO orderDAO;
-    private ProductDAO productDAO;
-
-    public OrderService(OrderDAO orderDAO, ProductDAO productDAO) {
-        this.orderDAO = orderDAO;
-        this.productDAO = productDAO;
-    }
-
+    private OrderItemDAO orderItemDAO;
+    private ProductService productService;
+    
     /**
-     * Place an order
-     * @param userId User ID
-     * @param cartItems Shopping cart items (Product ID -> Quantity)
-     * @param deliveryAddress Delivery address
-     * @param paymentMethod Payment method
-     * @param notes Notes
-     * @return Order ID, -1 if failed
+     * Constructor
      */
-    public int placeOrder(int userId, Map<Integer, Integer> cartItems, 
-                          String deliveryAddress, String paymentMethod, String notes) {
-        // Validate user ID
-        if (userId <= 0) {
-            return -1;
-        }
-
-        // Validate shopping cart
-        if (cartItems == null || cartItems.isEmpty()) {
-            return -1;
-        }
-
-        // Validate delivery address
-        if (!validateDeliveryAddress(deliveryAddress)) {
-            return -1;
-        }
-
-        // Validate payment method
-        if (!validatePaymentMethod(paymentMethod)) {
-            return -1;
-        }
-
-        // Validate stock
-        if (!validateStock(cartItems)) {
-            return -1;
-        }
-
-        // Calculate total amount
-        BigDecimal totalAmount = calculateTotalAmount(cartItems);
-        
-        if (totalAmount.compareTo(BigDecimal.ZERO) <= 0) {
-            return -1;
-        }
-
-        // Create order object
-        Order order = new Order(userId, totalAmount, deliveryAddress.trim(), paymentMethod.trim());
-        order.setStatus("pending");
-        order.setPaymentStatus("pending");
-        
-        if (notes != null && !notes.trim().isEmpty()) {
-            order.setNotes(notes.trim());
-        }
-
-        // Create order record
-        int orderId = orderDAO.createOrder(order);
-        
-        if (orderId > 0) {
-            // Create order items
-            boolean itemsCreated = createOrderItems(orderId, cartItems);
+    public OrderService() {
+        this.orderDAO = new OrderDAO();
+        this.orderItemDAO = new OrderItemDAO();
+        this.productService = new ProductService();
+    }
+    
+    // ================================
+    // Order Creation
+    // ================================
+    
+    /**
+     * Create a new order with items
+     * This is a transaction operation - all or nothing
+     * @param order Order object (without items)
+     * @param orderItems List of order items
+     * @return Created order with ID and items, or null if failed
+     */
+    public Order createOrder(Order order, List<OrderItem> orderItems) {
+        try {
+            // Validate order data
+            if (!validateOrder(order, orderItems)) {
+                return null;
+            }
             
-            if (itemsCreated) {
-                // Update stock
-                updateProductStock(cartItems);
-                return orderId;
-            } else {
-                return -1;
+            // Check stock availability for all items
+            for (OrderItem item : orderItems) {
+                if (!productService.hasStock(item.getProductId(), item.getQuantity())) {
+                    System.out.println("Insufficient stock for product ID: " + item.getProductId());
+                    return null;
+                }
             }
-        }
-
-        return -1;
-    }
-
-    /**
-     * Calculate order total amount
-     * @param cartItems Shopping cart items
-     * @return Total amount
-     */
-    public BigDecimal calculateTotalAmount(Map<Integer, Integer> cartItems) {
-        if (cartItems == null || cartItems.isEmpty()) {
-            return BigDecimal.ZERO;
-        }
-
-        BigDecimal total = BigDecimal.ZERO;
-        
-        for (Map.Entry<Integer, Integer> entry : cartItems.entrySet()) {
-            int productId = entry.getKey();
-            int quantity = entry.getValue();
-
-            if (quantity <= 0) {
-                continue;
-            }
-
-            Product product = productDAO.findById(productId);
-            if (product != null && product.getPrice() != null) {
-                BigDecimal itemTotal = product.getPrice().multiply(new BigDecimal(quantity));
-                total = total.add(itemTotal);
-            }
-        }
-
-        return total.setScale(2, RoundingMode.HALF_UP);
-    }
-
-    /**
-     * Validate if stock is sufficient
-     * @param cartItems Shopping cart items
-     * @return true if stock is sufficient, false otherwise
-     */
-    public boolean validateStock(Map<Integer, Integer> cartItems) {
-        if (cartItems == null || cartItems.isEmpty()) {
-            return false;
-        }
-
-        for (Map.Entry<Integer, Integer> entry : cartItems.entrySet()) {
-            int productId = entry.getKey();
-            int quantity = entry.getValue();
-
-            if (quantity <= 0) {
-                return false;
-            }
-
-            Product product = productDAO.findById(productId);
             
-            if (product == null) {
-                return false;
-            }
-
-            if (!product.isAvailable()) {
-                return false;
-            }
-
-            if (product.getStock() < quantity) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Create order items
-     * @param orderId Order ID
-     * @param cartItems Shopping cart items
-     * @return true if successful, false if failed
-     */
-    private boolean createOrderItems(int orderId, Map<Integer, Integer> cartItems) {
-        for (Map.Entry<Integer, Integer> entry : cartItems.entrySet()) {
-            int productId = entry.getKey();
-            int quantity = entry.getValue();
+            // Insert order
+            int orderId = orderDAO.insertOrder(order);
             
-            Product product = productDAO.findById(productId);
-            if (product == null) {
-                return false;
+            if (orderId <= 0) {
+                System.out.println("Failed to create order");
+                return null;
             }
-
-            double price = product.getPrice().doubleValue();
-            int result = orderDAO.createOrderItem(orderId, productId, quantity, price);
             
-            if (result <= 0) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * Update product stock
-     * @param cartItems Shopping cart items
-     */
-    private void updateProductStock(Map<Integer, Integer> cartItems) {
-        for (Map.Entry<Integer, Integer> entry : cartItems.entrySet()) {
-            int productId = entry.getKey();
-            int quantity = entry.getValue();
+            order.setOrderId(orderId);
             
-            Product product = productDAO.findById(productId);
-            if (product != null) {
-                product.decreaseStock(quantity);
-                productDAO.update(product);
+            // Insert order items
+            boolean allItemsInserted = true;
+            for (OrderItem item : orderItems) {
+                item.setOrderId(orderId);
+                int itemId = orderItemDAO.insertOrderItem(item);
+                
+                if (itemId <= 0) {
+                    allItemsInserted = false;
+                    System.out.println("Failed to insert order item for product ID: " + item.getProductId());
+                    break;
+                }
+                
+                item.setOrderItemId(itemId);
+                
+                // Decrease product stock
+                if (!productService.decreaseStock(item.getProductId(), item.getQuantity())) {
+                    allItemsInserted = false;
+                    System.out.println("Failed to decrease stock for product ID: " + item.getProductId());
+                    break;
+                }
             }
-        }
-    }
-
-    /**
-     * Get order list by user ID
-     * @param userId User ID
-     * @return Order list
-     */
-    public List<Order> getOrdersByUserId(int userId) {
-        if (userId <= 0) {
+            
+            // If any item failed, rollback by cancelling the order
+            if (!allItemsInserted) {
+                cancelOrder(orderId);
+                return null;
+            }
+            
+            order.setOrderItems(orderItems);
+            System.out.println("Order created successfully: ID " + orderId);
+            return order;
+            
+        } catch (SQLException e) {
+            System.err.println("Error creating order: " + e.getMessage());
+            e.printStackTrace();
             return null;
         }
-        return orderDAO.findByUserId(userId);
     }
-
+    
     /**
-     * Validate delivery address
-     * @param address Delivery address
-     * @return true if valid, false if invalid
+     * Validate order data
      */
-    public boolean validateDeliveryAddress(String address) {
-        if (address == null || address.trim().isEmpty()) {
+    private boolean validateOrder(Order order, List<OrderItem> orderItems) {
+        // Check user ID
+        if (order.getUserId() <= 0) {
+            System.out.println("Invalid user ID");
             return false;
         }
-        return address.trim().length() >= 5;
-    }
-
-    /**
-     * Validate payment method
-     * @param method Payment method
-     * @return true if valid, false if invalid
-     */
-    public boolean validatePaymentMethod(String method) {
-        if (method == null || method.trim().isEmpty()) {
+        
+        // Check delivery address
+        if (order.getDeliveryAddress() == null || order.getDeliveryAddress().trim().isEmpty()) {
+            System.out.println("Delivery address cannot be empty");
             return false;
         }
-        String normalized = method.toLowerCase().trim();
-        return normalized.equals("cash") || 
-               normalized.equals("card") || 
-               normalized.equals("online");
-    }
-
-    /**
-     * Check if can place order
-     * @param userId User ID
-     * @param cartItems Shopping cart items
-     * @return true if can place order, false otherwise
-     */
-    public boolean canPlaceOrder(int userId, Map<Integer, Integer> cartItems) {
-        if (userId <= 0 || cartItems == null || cartItems.isEmpty()) {
+        
+        // Check payment method
+        String paymentMethod = order.getPaymentMethod();
+        if (paymentMethod == null || (!paymentMethod.equals("cash") && 
+            !paymentMethod.equals("card") && !paymentMethod.equals("online"))) {
+            System.out.println("Invalid payment method: " + paymentMethod);
             return false;
         }
-        return validateStock(cartItems);
+        
+        // Check total amount
+        if (order.getTotalAmount() <= 0) {
+            System.out.println("Total amount must be greater than 0");
+            return false;
+        }
+        
+        // Check order items
+        if (orderItems == null || orderItems.isEmpty()) {
+            System.out.println("Order must contain at least one item");
+            return false;
+        }
+        
+        // Validate each order item
+        for (OrderItem item : orderItems) {
+            if (item.getProductId() <= 0) {
+                System.out.println("Invalid product ID in order item");
+                return false;
+            }
+            if (item.getQuantity() <= 0) {
+                System.out.println("Item quantity must be greater than 0");
+                return false;
+            }
+            if (item.getUnitPrice() < 0) {
+                System.out.println("Item unit price cannot be negative");
+                return false;
+            }
+        }
+        
+        return true;
     }
-
+    
+    // ================================
+    // Order Retrieval
+    // ================================
+    
     /**
-     * Calculate item subtotal
-     * @param productId Product ID
-     * @param quantity Quantity
-     * @return Subtotal amount
+     * Get order by ID with items
      */
-    public BigDecimal calculateItemSubtotal(int productId, int quantity) {
-        if (quantity <= 0) {
-            return BigDecimal.ZERO;
+    public Order getOrderById(int orderId) {
+        try {
+            Order order = orderDAO.getOrderById(orderId);
+            
+            if (order != null) {
+                // Load order items
+                List<OrderItem> items = orderItemDAO.getOrderItemsByOrderId(orderId);
+                order.setOrderItems(items);
+            }
+            
+            return order;
+            
+        } catch (SQLException e) {
+            System.err.println("Error getting order by ID: " + e.getMessage());
+            return null;
         }
-
-        Product product = productDAO.findById(productId);
-        if (product == null || product.getPrice() == null) {
-            return BigDecimal.ZERO;
+    }
+    
+    /**
+     * Get all orders for a user
+     */
+    public List<Order> getOrdersByUserId(int userId) {
+        try {
+            List<Order> orders = orderDAO.getOrdersByUserId(userId);
+            
+            // Load items for each order
+            for (Order order : orders) {
+                List<OrderItem> items = orderItemDAO.getOrderItemsByOrderId(order.getOrderId());
+                order.setOrderItems(items);
+            }
+            
+            return orders;
+            
+        } catch (SQLException e) {
+            System.err.println("Error getting orders by user ID: " + e.getMessage());
+            return null;
         }
-
-        return product.getPrice().multiply(new BigDecimal(quantity))
-                                  .setScale(2, RoundingMode.HALF_UP);
+    }
+    
+    /**
+     * Get orders by status
+     */
+    public List<Order> getOrdersByStatus(String status) {
+        try {
+            List<Order> orders = orderDAO.getOrdersByStatus(status);
+            
+            // Load items for each order
+            for (Order order : orders) {
+                List<OrderItem> items = orderItemDAO.getOrderItemsByOrderId(order.getOrderId());
+                order.setOrderItems(items);
+            }
+            
+            return orders;
+            
+        } catch (SQLException e) {
+            System.err.println("Error getting orders by status: " + e.getMessage());
+            return null;
+        }
+    }
+    
+    /**
+     * Get all orders (for admin)
+     */
+    public List<Order> getAllOrders() {
+        try {
+            List<Order> orders = orderDAO.getAllOrders();
+            
+            // Load items for each order
+            for (Order order : orders) {
+                List<OrderItem> items = orderItemDAO.getOrderItemsByOrderId(order.getOrderId());
+                order.setOrderItems(items);
+            }
+            
+            return orders;
+            
+        } catch (SQLException e) {
+            System.err.println("Error getting all orders: " + e.getMessage());
+            return null;
+        }
+    }
+    
+    /**
+     * Get recent orders for a user
+     */
+    public List<Order> getRecentOrders(int userId, int limit) {
+        try {
+            List<Order> orders = orderDAO.getRecentOrders(userId, limit);
+            
+            // Load items for each order
+            for (Order order : orders) {
+                List<OrderItem> items = orderItemDAO.getOrderItemsByOrderId(order.getOrderId());
+                order.setOrderItems(items);
+            }
+            
+            return orders;
+            
+        } catch (SQLException e) {
+            System.err.println("Error getting recent orders: " + e.getMessage());
+            return null;
+        }
+    }
+    
+    // ================================
+    // Order Update
+    // ================================
+    
+    /**
+     * Update order status
+     */
+    public boolean updateOrderStatus(int orderId, String newStatus) {
+        try {
+            // Validate status
+            if (!isValidOrderStatus(newStatus)) {
+                System.out.println("Invalid order status: " + newStatus);
+                return false;
+            }
+            
+            boolean success = orderDAO.updateOrderStatus(orderId, newStatus);
+            
+            if (success) {
+                System.out.println("Order status updated: ID " + orderId + " -> " + newStatus);
+            }
+            
+            return success;
+            
+        } catch (SQLException e) {
+            System.err.println("Error updating order status: " + e.getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Update payment status
+     */
+    public boolean updatePaymentStatus(int orderId, String paymentStatus) {
+        try {
+            // Validate payment status
+            if (!paymentStatus.equals("pending") && !paymentStatus.equals("paid") && 
+                !paymentStatus.equals("failed")) {
+                System.out.println("Invalid payment status: " + paymentStatus);
+                return false;
+            }
+            
+            return orderDAO.updatePaymentStatus(orderId, paymentStatus);
+            
+        } catch (SQLException e) {
+            System.err.println("Error updating payment status: " + e.getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Update order delivery address
+     */
+    public boolean updateDeliveryAddress(int orderId, String newAddress) {
+        try {
+            if (newAddress == null || newAddress.trim().isEmpty()) {
+                System.out.println("Delivery address cannot be empty");
+                return false;
+            }
+            
+            return orderDAO.updateDeliveryAddress(orderId, newAddress);
+            
+        } catch (SQLException e) {
+            System.err.println("Error updating delivery address: " + e.getMessage());
+            return false;
+        }
+    }
+    
+    // ================================
+    // Order Cancellation
+    // ================================
+    
+    /**
+     * Cancel an order and restore stock
+     */
+    public boolean cancelOrder(int orderId) {
+        try {
+            // Get order
+            Order order = getOrderById(orderId);
+            
+            if (order == null) {
+                System.out.println("Order not found: ID " + orderId);
+                return false;
+            }
+            
+            // Check if order can be cancelled
+            if (order.isCompleted() || order.isCancelled()) {
+                System.out.println("Cannot cancel order in status: " + order.getStatus());
+                return false;
+            }
+            
+            // Restore stock for all items
+            for (OrderItem item : order.getOrderItems()) {
+                productService.increaseStock(item.getProductId(), item.getQuantity());
+            }
+            
+            // Update order status to cancelled
+            boolean success = orderDAO.updateOrderStatus(orderId, "cancelled");
+            
+            if (success) {
+                System.out.println("Order cancelled successfully: ID " + orderId);
+            }
+            
+            return success;
+            
+        } catch (SQLException e) {
+            System.err.println("Error cancelling order: " + e.getMessage());
+            return false;
+        }
+    }
+    
+    // ================================
+    // Order Deletion
+    // ================================
+    
+    /**
+     * Delete order (admin only, cascades to order items)
+     */
+    public boolean deleteOrder(int orderId) {
+        try {
+            boolean success = orderDAO.deleteOrder(orderId);
+            
+            if (success) {
+                System.out.println("Order deleted successfully: ID " + orderId);
+            }
+            
+            return success;
+            
+        } catch (SQLException e) {
+            System.err.println("Error deleting order: " + e.getMessage());
+            return false;
+        }
+    }
+    
+    // ================================
+    // Statistics
+    // ================================
+    
+    /**
+     * Get total order count
+     */
+    public int getTotalOrderCount() {
+        try {
+            return orderDAO.getTotalOrderCount();
+        } catch (SQLException e) {
+            System.err.println("Error getting order count: " + e.getMessage());
+            return 0;
+        }
+    }
+    
+    /**
+     * Get order count by user
+     */
+    public int getOrderCountByUser(int userId) {
+        try {
+            return orderDAO.getOrderCountByUser(userId);
+        } catch (SQLException e) {
+            System.err.println("Error getting order count by user: " + e.getMessage());
+            return 0;
+        }
+    }
+    
+    /**
+     * Get order count by status
+     */
+    public int getOrderCountByStatus(String status) {
+        try {
+            return orderDAO.getOrderCountByStatus(status);
+        } catch (SQLException e) {
+            System.err.println("Error getting order count by status: " + e.getMessage());
+            return 0;
+        }
+    }
+    
+    /**
+     * Get total revenue
+     */
+    public double getTotalRevenue() {
+        try {
+            return orderDAO.getTotalRevenue();
+        } catch (SQLException e) {
+            System.err.println("Error getting total revenue: " + e.getMessage());
+            return 0.0;
+        }
+    }
+    
+    /**
+     * Get revenue by user
+     */
+    public double getRevenueByUser(int userId) {
+        try {
+            return orderDAO.getRevenueByUser(userId);
+        } catch (SQLException e) {
+            System.err.println("Error getting revenue by user: " + e.getMessage());
+            return 0.0;
+        }
+    }
+    
+    // ================================
+    // Validation Methods
+    // ================================
+    
+    /**
+     * Check if order status is valid
+     */
+    private boolean isValidOrderStatus(String status) {
+        return status.equals("pending") || status.equals("confirmed") || 
+               status.equals("preparing") || status.equals("ready") || 
+               status.equals("delivered") || status.equals("cancelled");
     }
 }

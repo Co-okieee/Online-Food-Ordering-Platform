@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact Us - FoodHub</title>
+  <link rel="stylesheet" href="../css/contact.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Navigation Bar -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <div class="nav-left">
+        <a href="index.html" class="logo">
+          <span class="logo-icon">🍽️</span>
+          <span class="logo-text">FoodHub</span>
+        </a>
+      </div>
+      
+      <div class="nav-center">
+        <ul class="nav-menu">
+          <li><a href="index.html" class="nav-link">Home</a></li>
+          <li><a href="product.html" class="nav-link">Menu</a></li>
+          <li><a href="about.html" class="nav-link">About</a></li>
+          <li><a href="contact.html" class="nav-link active">Contact</a></li>
+        </ul>
+      </div>
+      
+      <div class="nav-right">
+        <div class="user-section" id="userSection">
+          <a href="login.html" class="btn-login" id="loginBtn">Sign In</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Page Header -->
+  <section class="page-header">
+    <div class="container">
+      <h1 class="page-title">Contact Us</h1>
+      <p class="page-subtitle">We'd love to hear from you. Get in touch with us!</p>
+    </div>
+  </section>
+
+  <!-- Contact Content -->
+  <section class="contact-section">
+    <div class="container">
+      <div class="contact-grid">
+        <!-- Contact Form -->
+        <div class="contact-form-section">
+          <h2 class="form-title">Send Us a Message</h2>
+          <p class="form-subtitle">
+            Have a question or feedback? Fill out the form below and we'll get back to you as soon as possible.
+          </p>
+          
+          <form class="contact-form" id="contactForm">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="contactName">Name <span class="required">*</span></label>
+                <input type="text" id="contactName" name="name" required 
+                       placeholder="Your name">
+              </div>
+              
+              <div class="form-group">
+                <label for="contactEmail">Email <span class="required">*</span></label>
+                <input type="email" id="contactEmail" name="email" required 
+                       placeholder="your.email@example.com">
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="contactPhone">Phone Number</label>
+              <input type="tel" id="contactPhone" name="phone" 
+                     placeholder="+1 (555) 123-4567">
+            </div>
+            
+            <div class="form-group">
+              <label for="contactSubject">Subject <span class="required">*</span></label>
+              <select id="contactSubject" name="subject" required>
+                <option value="">Select a subject</option>
+                <option value="general">General Inquiry</option>
+                <option value="order">Order Issue</option>
+                <option value="feedback">Feedback</option>
+                <option value="partnership">Restaurant Partnership</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label for="contactMessage">Message <span class="required">*</span></label>
+              <textarea id="contactMessage" name="message" rows="6" required 
+                        placeholder="Tell us more about your inquiry..."></textarea>
+            </div>
+            
+            <button type="submit" class="btn btn-primary btn-submit">
+              <span>Send Message</span>
+              <span class="btn-arrow">→</span>
+            </button>
+          </form>
+        </div>
+        
+        <!-- Contact Information -->
+        <div class="contact-info-section">
+          <div class="info-card">
+            <h3>Contact Information</h3>
+            <p class="info-intro">
+              Feel free to reach out to us through any of these channels
+            </p>
+            
+            <div class="info-items">
+              <div class="info-item">
+                <div class="info-icon">📍</div>
+                <div class="info-content">
+                  <h4>Address</h4>
+                  <p>123 Food Street, Culinary District<br>New York, NY 10001, USA</p>
+                </div>
+              </div>
+              
+              <div class="info-item">
+                <div class="info-icon">📞</div>
+                <div class="info-content">
+                  <h4>Phone</h4>
+                  <p>+1 (555) 123-4567<br>Mon-Sun: 8:00 AM - 10:00 PM</p>
+                </div>
+              </div>
+              
+              <div class="info-item">
+                <div class="info-icon">📧</div>
+                <div class="info-content">
+                  <h4>Email</h4>
+                  <p>support@foodhub.com<br>info@foodhub.com</p>
+                </div>
+              </div>
+              
+              <div class="info-item">
+                <div class="info-icon">⏰</div>
+                <div class="info-content">
+                  <h4>Business Hours</h4>
+                  <p>Monday - Friday: 8:00 AM - 10:00 PM<br>
+                     Saturday - Sunday: 9:00 AM - 11:00 PM</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="social-card">
+            <h4>Follow Us</h4>
+            <p>Stay connected on social media</p>
+            
+            <div class="social-links">
+              <a href="#" class="social-link facebook">
+                <span class="social-icon">📘</span>
+                <span class="social-name">Facebook</span>
+              </a>
+              <a href="#" class="social-link instagram">
+                <span class="social-icon">📷</span>
+                <span class="social-name">Instagram</span>
+              </a>
+              <a href="#" class="social-link twitter">
+                <span class="social-icon">🐦</span>
+                <span class="social-name">Twitter</span>
+              </a>
+            </div>
+          </div>
+          
+          <div class="faq-card">
+            <h4>Quick Answers</h4>
+            <p>Looking for quick help? Check our FAQ section</p>
+            <a href="#" class="btn-faq">View FAQ →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ Section -->
+  <section class="faq-section">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">Frequently Asked Questions</h2>
+        <p class="section-subtitle">Find quick answers to common questions</p>
+      </div>
+      
+      <div class="faq-grid">
+        <div class="faq-item">
+          <h3>How long does delivery take?</h3>
+          <p>Most deliveries arrive within 30 minutes. We guarantee delivery within 30 minutes or your order is free!</p>
+        </div>
+        
+        <div class="faq-item">
+          <h3>What payment methods do you accept?</h3>
+          <p>We accept cash on delivery, credit/debit cards, and online payment methods including PayPal and digital wallets.</p>
+        </div>
+        
+        <div class="faq-item">
+          <h3>Can I track my order?</h3>
+          <p>Yes! Once your order is confirmed, you can track it in real-time from our Orders page.</p>
+        </div>
+        
+        <div class="faq-item">
+          <h3>What's your refund policy?</h3>
+          <p>If you're not satisfied with your order, contact us within 24 hours and we'll make it right with a refund or replacement.</p>
+        </div>
+        
+        <div class="faq-item">
+          <h3>Do you offer group orders?</h3>
+          <p>Absolutely! You can order multiple items and we'll coordinate delivery for larger groups.</p>
+        </div>
+        
+        <div class="faq-item">
+          <h3>Are there any dietary options?</h3>
+          <p>Yes, we offer vegetarian, vegan, gluten-free, and many other dietary options. Filter by preference on our menu page.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Toast Notification -->
+  <div class="toast" id="toast">
+    <span class="toast-icon">✓</span>
+    <span class="toast-message" id="toastMessage">Success!</span>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3 class="footer-title">
+            <span class="logo-icon">🍽️</span>
+            FoodHub
+          </h3>
+          <p class="footer-text">
+            Bringing delicious food to your doorstep since 2024.
+          </p>
+        </div>
+        
+        <div class="footer-section">
+          <h4 class="footer-heading">Quick Links</h4>
+          <ul class="footer-links">
+            <li><a href="product.html">Menu</a></li>
+            <li><a href="about.html">About Us</a></li>
+            <li><a href="contact.html">Contact</a></li>
+            <li><a href="orders.html">My Orders</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-section">
+          <h4 class="footer-heading">Account</h4>
+          <ul class="footer-links">
+            <li><a href="login.html">Sign In</a></li>
+            <li><a href="register.html">Sign Up</a></li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="footer-bottom">
+        <p>&copy; 2024 FoodHub. All rights reserved. | Created for CAT201 Project</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- JavaScript -->
+  <script src="../js/contact.js"></script>
+</body>
+</html>

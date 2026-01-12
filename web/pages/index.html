@@ -3,24 +3,261 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Products - Food Store</title>
-  <link rel="stylesheet" href="../css/user.css">
+  <title>FoodHub - Fresh Food Delivered to Your Door</title>
+  <link rel="stylesheet" href="../css/index.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-  <div class="container">
-    <div id="userbar">
-      <span id="userinfo">Welcome, John (Customer)</span>
-      <div class="userbar-right">
-        <a href="orders.html">My Orders</a>
-        <button id="logoutBtn">Logout</button>
+  <!-- Navigation Bar -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <div class="nav-left">
+        <a href="index.html" class="logo">
+          <span class="logo-icon">🍽️</span>
+          <span class="logo-text">FoodHub</span>
+        </a>
+      </div>
+      
+      <div class="nav-center">
+        <ul class="nav-menu">
+          <li><a href="index.html" class="nav-link active">Home</a></li>
+          <li><a href="product.html" class="nav-link">Menu</a></li>
+          <li><a href="about.html" class="nav-link">About</a></li>
+          <li><a href="contact.html" class="nav-link">Contact</a></li>
+        </ul>
+      </div>
+      
+      <div class="nav-right">
+        <div class="user-section" id="userSection">
+          <a href="login.html" class="btn-login" id="loginBtn">Sign In</a>
+        </div>
       </div>
     </div>
-    <h1>Delicious Products</h1>
-    <div id="products" class="grid">
-      <div class="loading">Loading products...</div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-background"></div>
+    <div class="hero-content">
+      <div class="hero-text">
+        <h1 class="hero-title">
+          <span class="hero-title-line">Delicious Food,</span>
+          <span class="hero-title-line">Delivered Fast</span>
+        </h1>
+        <p class="hero-subtitle">
+          Fresh ingredients, authentic flavors, and exceptional service. 
+          Order from our curated menu and enjoy restaurant-quality meals at home.
+        </p>
+        <div class="hero-buttons">
+          <a href="product.html" class="btn btn-primary">
+            <span>Explore Menu</span>
+            <span class="btn-arrow">→</span>
+          </a>
+          <a href="#how-it-works" class="btn btn-secondary">Learn More</a>
+        </div>
+      </div>
+      <div class="hero-image">
+        <div class="food-card floating">
+          <div class="food-card-image">🍕</div>
+          <div class="food-card-info">
+            <div class="food-card-title">Classic Margherita</div>
+            <div class="food-card-price">$12.99</div>
+          </div>
+        </div>
+        <div class="food-card floating" style="animation-delay: 0.2s;">
+          <div class="food-card-image">🍔</div>
+          <div class="food-card-info">
+            <div class="food-card-title">Gourmet Burger</div>
+            <div class="food-card-price">$15.99</div>
+          </div>
+        </div>
+        <div class="food-card floating" style="animation-delay: 0.4s;">
+          <div class="food-card-image">🍜</div>
+          <div class="food-card-info">
+            <div class="food-card-title">Ramen Bowl</div>
+            <div class="food-card-price">$13.99</div>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
-  
-  <script src="../js/user.js"></script>
+    <div class="scroll-indicator">
+      <span>Scroll</span>
+      <div class="scroll-line"></div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section class="features" id="how-it-works">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">How It Works</h2>
+        <p class="section-subtitle">Three simple steps to delicious food</p>
+      </div>
+      
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">
+            <span class="icon-large">🔍</span>
+          </div>
+          <h3 class="feature-title">Browse Menu</h3>
+          <p class="feature-description">
+            Explore our diverse selection of dishes, from comfort classics to exotic cuisines. 
+            Filter by category, dietary preferences, or cuisine type.
+          </p>
+        </div>
+        
+        <div class="feature-card">
+          <div class="feature-icon">
+            <span class="icon-large">🛒</span>
+          </div>
+          <h3 class="feature-title">Add to Cart</h3>
+          <p class="feature-description">
+            Select your favorites and customize your order. Review your cart and 
+            proceed to checkout when ready.
+          </p>
+        </div>
+        
+        <div class="feature-card">
+          <div class="feature-icon">
+            <span class="icon-large">🚀</span>
+          </div>
+          <h3 class="feature-title">Fast Delivery</h3>
+          <p class="feature-description">
+            Track your order in real-time. Our delivery partners ensure your food 
+            arrives fresh and hot at your doorstep.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Popular Categories -->
+  <section class="categories">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">Popular Categories</h2>
+        <p class="section-subtitle">What are you craving today?</p>
+      </div>
+      
+      <div class="categories-grid">
+        <a href="product.html?category=appetizer" class="category-card">
+          <div class="category-emoji">🥗</div>
+          <h3 class="category-name">Appetizers</h3>
+          <p class="category-count">8 items</p>
+        </a>
+        
+        <a href="product.html?category=main_course" class="category-card">
+          <div class="category-emoji">🍔</div>
+          <h3 class="category-name">Main Course</h3>
+          <p class="category-count">13 items</p>
+        </a>
+        
+        <a href="product.html?category=dessert" class="category-card">
+          <div class="category-emoji">🍰</div>
+          <h3 class="category-name">Desserts</h3>
+          <p class="category-count">6 items</p>
+        </a>
+        
+        <a href="product.html?category=beverage" class="category-card">
+          <div class="category-emoji">🥤</div>
+          <h3 class="category-name">Beverages</h3>
+          <p class="category-count">6 items</p>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Promotional Banner -->
+  <section class="promo-banner">
+    <div class="promo-content">
+      <div class="promo-text">
+        <h2 class="promo-title">New User Special</h2>
+        <p class="promo-description">Get 20% off your first order! Sign up today and start enjoying delicious food.</p>
+      </div>
+      <div class="promo-action">
+        <a href="register.html" class="btn btn-promo">Sign Up Now</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Why Choose Us -->
+  <section class="benefits">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">Why Choose FoodHub?</h2>
+      </div>
+      
+      <div class="benefits-grid">
+        <div class="benefit-item">
+          <div class="benefit-icon">⚡</div>
+          <h3 class="benefit-title">Lightning Fast</h3>
+          <p class="benefit-text">30 minute delivery guarantee or your order is free</p>
+        </div>
+        
+        <div class="benefit-item">
+          <div class="benefit-icon">✨</div>
+          <h3 class="benefit-title">Fresh Ingredients</h3>
+          <p class="benefit-text">We partner with local suppliers for the freshest produce</p>
+        </div>
+        
+        <div class="benefit-item">
+          <div class="benefit-icon">💯</div>
+          <h3 class="benefit-title">Quality Guaranteed</h3>
+          <p class="benefit-text">100% satisfaction guarantee on every order</p>
+        </div>
+        
+        <div class="benefit-item">
+          <div class="benefit-icon">🎯</div>
+          <h3 class="benefit-title">Easy Ordering</h3>
+          <p class="benefit-text">User-friendly interface for seamless ordering experience</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+<!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3 class="footer-title">
+            <span class="logo-icon">🍽️</span>
+            FoodHub
+          </h3>
+          <p class="footer-text">
+            Bringing delicious food to your doorstep since 2024.
+          </p>
+        </div>
+        
+        <div class="footer-section">
+          <h4 class="footer-heading">Quick Links</h4>
+          <ul class="footer-links">
+            <li><a href="product.html">Menu</a></li>
+            <li><a href="about.html">About Us</a></li>
+            <li><a href="contact.html">Contact</a></li>
+            <li><a href="orders.html">My Orders</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-section">
+          <h4 class="footer-heading">Account</h4>
+          <ul class="footer-links">
+            <li><a href="login.html">Sign In</a></li>
+            <li><a href="register.html">Sign Up</a></li>
+            <li><a href="cart.html">Cart</a></li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="footer-bottom">
+        <p>&copy; 2024 FoodHub. All rights reserved. | Created for CAT201 Project</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- JavaScript -->
+  <script src="../js/index.js"></script>
 </body>
 </html>

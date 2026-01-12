@@ -3,25 +3,263 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Product Detail - Food Store</title>
-  <link rel="stylesheet" href="../css/user.css">
+  <title>Menu - FoodHub</title>
+  <link rel="stylesheet" href="../css/product.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-  <div class="container">
-    <div id="userbar">
-      <a href="index.html">← Back to Home</a>
+  <!-- Navigation Bar -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <div class="nav-left">
+        <a href="index.html" class="logo">
+          <span class="logo-icon">🍽️</span>
+          <span class="logo-text">FoodHub</span>
+        </a>
+      </div>
+      
+      <div class="nav-center">
+        <ul class="nav-menu">
+          <li><a href="index.html" class="nav-link">Home</a></li>
+          <li><a href="product.html" class="nav-link active">Menu</a></li>
+          <li><a href="about.html" class="nav-link">About</a></li>
+          <li><a href="contact.html" class="nav-link">Contact</a></li>
+        </ul>
+      </div>
+      
+      <div class="nav-right">
+        <div class="user-section" id="userSection">
+          <a href="javascript:void(0)" class="nav-icon-btn cart-btn" onclick="openCartSidebar()">
+            <span class="icon">🛒</span>
+            <span class="cart-count" id="cartCount">0</span>
+          </a>
+          <a href="login.html" class="btn-login" id="loginBtn">Sign In</a>
+        </div>
+      </div>
     </div>
-    <h1 id="pname">Classic Burger</h1>
-    <div id="pinfo"></div>
-    <form id="orderForm">
-      <input type="hidden" name="productId" id="pid">
-      <label>Quantity</label>
-      <input type="number" name="quantity" value="1" min="1" required>
-      <button type="submit">Place Order</button>
-    </form>
-    <div id="msg"></div>
+  </nav>
+
+  <!-- Page Header -->
+  <section class="page-header">
+    <div class="container">
+      <h1 class="page-title">Our Menu</h1>
+      <p class="page-subtitle">Discover delicious dishes crafted with fresh ingredients</p>
+    </div>
+  </section>
+
+  <!-- Filters & Search -->
+  <section class="filters-section">
+    <div class="container">
+      <div class="filters-wrapper">
+        <!-- Search Bar -->
+        <div class="search-box">
+          <input type="text" id="searchInput" placeholder="Search for dishes...">
+          <button class="search-btn" id="searchBtn">
+            <span>🔍</span>
+          </button>
+        </div>
+
+        <!-- Category Filter -->
+        <div class="category-filter">
+          <button class="filter-btn active" data-category="all">All</button>
+          <button class="filter-btn" data-category="appetizer">Appetizers</button>
+          <button class="filter-btn" data-category="main_course">Main Course</button>
+          <button class="filter-btn" data-category="dessert">Desserts</button>
+          <button class="filter-btn" data-category="beverage">Beverages</button>
+        </div>
+
+        <!-- Sort Options -->
+        <div class="sort-section">
+          <label for="sortSelect">Sort by:</label>
+          <select id="sortSelect">
+            <option value="default">Default</option>
+            <option value="price-low">Price: Low to High</option>
+            <option value="price-high">Price: High to Low</option>
+            <option value="name">Name: A to Z</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Products Grid -->
+  <section class="products-section">
+    <div class="container">
+      <!-- Loading State -->
+      <div class="loading-state" id="loadingState">
+        <div class="spinner"></div>
+        <p>Loading delicious menu items...</p>
+      </div>
+
+      <!-- Error State -->
+      <div class="error-state" id="errorState" style="display: none;">
+        <span class="error-icon">⚠️</span>
+        <h3>Oops! Something went wrong</h3>
+        <p id="errorMessage">Unable to load products. Please try again.</p>
+        <button class="btn-retry" onclick="loadProducts()">Retry</button>
+      </div>
+
+      <!-- Empty State -->
+      <div class="empty-state" id="emptyState" style="display: none;">
+        <span class="empty-icon">🔍</span>
+        <h3>No products found</h3>
+        <p>Try adjusting your search or filters</p>
+      </div>
+
+      <!-- Products Grid -->
+      <div class="products-grid" id="productsGrid">
+        <!-- Products will be dynamically loaded here -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Product Detail Modal -->
+  <div class="modal" id="productModal">
+    <div class="modal-overlay" onclick="closeModal()"></div>
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+      
+      <div class="modal-body">
+        <div class="modal-image">
+          <div class="product-image-large" id="modalImage">
+            <!-- Product emoji or image -->
+          </div>
+          <div class="stock-badge" id="modalStockBadge">
+            <!-- Stock status badge -->
+          </div>
+        </div>
+
+        <div class="modal-details">
+          <h2 class="modal-title" id="modalTitle">Product Name</h2>
+          <div class="modal-category" id="modalCategory">Category</div>
+          <div class="modal-price" id="modalPrice">$0.00</div>
+          
+          <div class="modal-description">
+            <h3>Description</h3>
+            <p id="modalDescription">Product description goes here...</p>
+          </div>
+
+          <div class="modal-quantity">
+            <h3>Quantity</h3>
+            <div class="quantity-selector">
+              <button class="qty-btn" onclick="decreaseQuantity()">-</button>
+              <input type="number" id="modalQuantity" value="1" min="1" max="99" readonly>
+              <button class="qty-btn" onclick="increaseQuantity()">+</button>
+            </div>
+          </div>
+
+          <div class="modal-total">
+            <span>Total:</span>
+            <span class="total-price" id="modalTotal">$0.00</span>
+          </div>
+
+          <div class="modal-actions">
+            <button class="btn btn-primary btn-add-to-cart" id="modalAddToCart">
+              <span>Add to Cart</span>
+              <span class="btn-icon">🛒</span>
+            </button>
+            <button class="btn btn-secondary" onclick="closeModal()">Continue Shopping</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
-  
-  <script src="../js/user.js"></script>
+
+<!-- Cart Sidebar Panel -->
+<div class="cart-sidebar" id="cartSidebar">
+  <div class="cart-overlay" onclick="closeCartSidebar()"></div>
+  <div class="cart-panel">
+    <!-- Cart Header -->
+    <div class="cart-header">
+      <h2 class="cart-title">
+        <span class="cart-icon">🛒</span>
+        Shopping Cart
+      </h2>
+      <button class="cart-close-btn" onclick="closeCartSidebar()">
+        <span>&times;</span>
+      </button>
+    </div>
+
+    <!-- Cart Content -->
+    <div class="cart-content" id="cartContent">
+      <!-- Cart items will be dynamically loaded here -->
+    </div>
+
+    <!-- Cart Footer -->
+    <div class="cart-footer">
+      <div class="cart-summary">
+        <div class="cart-summary-row">
+          <span>Subtotal:</span>
+          <span class="cart-subtotal" id="cartSubtotal">$0.00</span>
+        </div>
+        <div class="cart-summary-row cart-total-row">
+          <span>Total:</span>
+          <span class="cart-total" id="cartTotal">$0.00</span>
+        </div>
+      </div>
+      <div class="cart-actions">
+        <button class="btn btn-secondary btn-block" onclick="closeCartSidebar()">
+          Continue Shopping
+        </button>
+        <button class="btn btn-primary btn-block" onclick="goToCheckout()">
+          Proceed to Checkout
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+  <!-- Toast Notification -->
+  <div class="toast" id="toast">
+    <span class="toast-icon">✓</span>
+    <span class="toast-message" id="toastMessage">Added to cart!</span>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3 class="footer-title">
+            <span class="logo-icon">🍽️</span>
+            FoodHub
+          </h3>
+          <p class="footer-text">
+            Bringing delicious food to your doorstep since 2024. 
+            Fresh ingredients, authentic flavors, exceptional service.
+          </p>
+        </div>
+        
+        <div class="footer-section">
+          <h4 class="footer-heading">Quick Links</h4>
+          <ul class="footer-links">
+            <li><a href="product.html">Menu</a></li>
+            <li><a href="orders.html">My Orders</a></li>
+            <li><a href="about.html">About Us</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-section">
+          <h4 class="footer-heading">Account</h4>
+          <ul class="footer-links">
+            <li><a href="login.html">Sign In</a></li>
+            <li><a href="register.html">Sign Up</a></li>
+            <li><a href="cart.html">Cart</a></li>
+            <li><a href="orders.html">Track Order</a></li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="footer-bottom">
+        <p>&copy; 2024 FoodHub. All rights reserved. | Created for COMP 201 Project</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- JavaScript -->
+  <script src="../js/product.js"></script>
 </body>
 </html>

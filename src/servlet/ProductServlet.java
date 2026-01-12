@@ -1,8 +1,9 @@
 package servlet;
 
-import dao.ProductDAO;
 import model.Product;
-import model.User;
+import service.ProductService;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -12,454 +13,395 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.math.BigDecimal;
 import java.util.List;
 
 /**
- * ProductServlet - 首屏，处理商品相关的前端请求
- * 
- * @author Your Name
- * @version 1.0
+ * Product Servlet
+ * Handles product operations (list, add, update, delete)
+ *
+ * Supported Actions:
+ * - list: Get all products
+ * - get: Get product by ID
+ * - add: Add new product (admin only)
+ * - update: Update product (admin only)
+ * - delete: Delete product (admin only)
+ * - search: Search products by keyword
  */
 @WebServlet("/ProductServlet")
 public class ProductServlet extends HttpServlet {
-    private static final long serialVersionUID = 1L;
-    
-    private ProductDAO productDAO;
-    
+
+    private ProductService productService;
+    private Gson gson;
+
     @Override
     public void init() throws ServletException {
-        // 初始化 DAO（通过接口）
-        productDAO = new dao.impl.ProductDAOImpl();
+        productService = new ProductService();
+        gson = new Gson();
     }
-    
-    /**
-     * Handle GET requests
-     */
+
+    // ================================
+    // GET Request Handler
+    // ================================
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
+        response.setContentType("application/json;charset=UTF-8");
+
         String action = request.getParameter("action");
-        
+
         if (action == null) {
-            action = "list"; // Default action: show all products
+            sendErrorResponse(response, "Action parameter is required");
+            return;
         }
-        
+
         switch (action) {
             case "list":
-                listAllProducts(request, response);
+                handleListProducts(request, response);
                 break;
-            case "category":
-                listProductsByCategory(request, response);
-                break;
-            case "details":
-                getProductDetails(request, response);
+            case "get":
+                handleGetProduct(request, response);
                 break;
             case "search":
-                searchProducts(request, response);
+                handleSearchProducts(request, response);
                 break;
             default:
-                listAllProducts(request, response);
-                break;
+                sendErrorResponse(response, "Invalid action: " + action);
         }
     }
-    
-    /**
-     * Handle POST requests
-     */
+
+    // ================================
+    // POST Request Handler
+    // ================================
+
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
+        request.setCharacterEncoding("UTF-8");
+        response.setContentType("application/json;charset=UTF-8");
+
         String action = request.getParameter("action");
-        
-        if (action == null || action.trim().isEmpty()) {
-            sendJsonResponse(response, false, "No action specified");
+
+        if (action == null) {
+            sendErrorResponse(response, "Action parameter is required");
             return;
         }
-        
-        // ② 确认 Admin 判断
-        HttpSession session = request.getSession(false);
-        if (session == null) {
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Please login first");
-            return;
+
+        // Check admin authentication for write operations
+        if (!action.equals("list") && !action.equals("get") && !action.equals("search")) {
+            if (!isAdmin(request)) {
+                sendErrorResponse(response, "Unauthorized - Admin access required");
+                return;
+            }
         }
-        
-        User user = (User) session.getAttribute("user");
-        if (user == null || !user.isAdmin()) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Admin access required");
-            return;
-        }
-        
+
         switch (action) {
             case "add":
-                addProduct(request, response);
+                handleAddProduct(request, response);
                 break;
             case "update":
-                updateProduct(request, response);
+                handleUpdateProduct(request, response);
                 break;
             case "delete":
-                deleteProduct(request, response);
+                handleDeleteProduct(request, response);
                 break;
             default:
-                sendJsonResponse(response, false, "Invalid action");
-                break;
+                sendErrorResponse(response, "Invalid action: " + action);
         }
     }
-    
-    /**
-     * List all available products
-     */
-    private void listAllProducts(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        
-        try {
-            List<Product> products = productDAO.getAvailableProducts();
-            sendProductListResponse(response, true, "Products retrieved successfully", products);
-            
-        } catch (Exception e) {
-            e.printStackTrace();
-            sendJsonResponse(response, false, "Error retrieving products: " + e.getMessage());
-        }
-    }
-    
-    /**
-     * List products by category
-     */
-    private void listProductsByCategory(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        
+
+    // ================================
+    // List Products Handler
+    // ================================
+
+    private void handleListProducts(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+
         String category = request.getParameter("category");
-        
-        if (category == null || category.trim().isEmpty()) {
-            sendJsonResponse(response, false, "Category parameter is required");
-            return;
+        String status = request.getParameter("status");
+
+        List<Product> products;
+
+        if (category != null && !category.isEmpty() && !category.equals("all")) {
+            // Filter by category
+            products = productService.getProductsByCategory(category);
+        } else if (status != null && !status.isEmpty()) {
+            // Filter by status
+            products = productService.getProductsByStatus(status);
+        } else {
+            // Get all products
+            products = productService.getAllProducts();
         }
-        
-        try {
-            List<Product> products = productDAO.getProductsByCategory(category);
-            sendProductListResponse(response, true, "Products retrieved successfully", products);
-            
-        } catch (Exception e) {
-            e.printStackTrace();
-            sendJsonResponse(response, false, "Error retrieving products: " + e.getMessage());
+
+        if (products != null) {
+            JsonObject jsonResponse = new JsonObject();
+            jsonResponse.addProperty("success", true);
+            jsonResponse.add("products", gson.toJsonTree(products));
+
+            sendJsonResponse(response, jsonResponse);
+        } else {
+            sendErrorResponse(response, "Failed to retrieve products");
         }
     }
-    
-    /**
-     * Get product details by ID
-     */
-    private void getProductDetails(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        
+
+    // ================================
+    // Get Product Handler
+    // ================================
+
+    private void handleGetProduct(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+
         String productIdStr = request.getParameter("productId");
-        
+
         if (productIdStr == null || productIdStr.trim().isEmpty()) {
-            sendJsonResponse(response, false, "Product ID is required");
+            sendErrorResponse(response, "Product ID is required");
             return;
         }
-        
+
         try {
             int productId = Integer.parseInt(productIdStr);
-            Product product = productDAO.getProductById(productId);
-            
+            Product product = productService.getProductById(productId);
+
             if (product != null) {
-                sendProductResponse(response, true, "Product found", product);
+                JsonObject jsonResponse = new JsonObject();
+                jsonResponse.addProperty("success", true);
+                jsonResponse.add("product", gson.toJsonTree(product));
+
+                sendJsonResponse(response, jsonResponse);
             } else {
-                sendJsonResponse(response, false, "Product not found");
+                sendErrorResponse(response, "Product not found");
             }
-            
+
         } catch (NumberFormatException e) {
-            sendJsonResponse(response, false, "Invalid product ID format");
-        } catch (Exception e) {
-            e.printStackTrace();
-            sendJsonResponse(response, false, "Error retrieving product: " + e.getMessage());
+            sendErrorResponse(response, "Invalid product ID format");
         }
     }
-    
-    /**
-     * Search products by keyword
-     */
-    private void searchProducts(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        
+
+    // ================================
+    // Search Products Handler
+    // ================================
+
+    private void handleSearchProducts(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+
         String keyword = request.getParameter("keyword");
-        
+
         if (keyword == null || keyword.trim().isEmpty()) {
-            sendJsonResponse(response, false, "Search keyword is required");
+            sendErrorResponse(response, "Search keyword is required");
             return;
         }
-        
-        try {
-            List<Product> products = productDAO.searchProducts(keyword);
-            sendProductListResponse(response, true, products.size() + " products found", products);
-            
-        } catch (Exception e) {
-            e.printStackTrace();
-            sendJsonResponse(response, false, "Error searching products: " + e.getMessage());
+
+        List<Product> products = productService.searchProducts(keyword);
+
+        if (products != null) {
+            JsonObject jsonResponse = new JsonObject();
+            jsonResponse.addProperty("success", true);
+            jsonResponse.add("products", gson.toJsonTree(products));
+
+            sendJsonResponse(response, jsonResponse);
+        } else {
+            sendErrorResponse(response, "Search failed");
         }
     }
-    
-    /**
-     * Add new product (Admin only)
-     */
-    private void addProduct(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        
+
+    // ================================
+    // Add Product Handler (Admin only)
+    // ================================
+
+    private void handleAddProduct(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+
+        String name = request.getParameter("name");
+        String description = request.getParameter("description");
+        String priceStr = request.getParameter("price");
+        String stockStr = request.getParameter("stock");
+        String category = request.getParameter("category");
+        String imageUrl = request.getParameter("imageUrl");
+        String status = request.getParameter("status");
+
+        // Validate required fields
+        if (name == null || name.trim().isEmpty() ||
+                priceStr == null || stockStr == null ||
+                category == null || category.trim().isEmpty()) {
+            sendErrorResponse(response, "Name, price, stock, and category are required");
+            return;
+        }
+
         try {
-            String productName = request.getParameter("productName");
-            String description = request.getParameter("description");
-            String priceStr = request.getParameter("price");
-            String stockStr = request.getParameter("stock");
-            String category = request.getParameter("category");
-            String imageUrl = request.getParameter("imageUrl");
-            
-            if (productName == null || productName.trim().isEmpty() ||
-                priceStr == null || stockStr == null || category == null) {
-                sendJsonResponse(response, false, "All required fields must be filled");
-                return;
-            }
-            
-            BigDecimal price = new BigDecimal(priceStr);
+            double price = Double.parseDouble(priceStr);
             int stock = Integer.parseInt(stockStr);
-            
-            if (price.compareTo(BigDecimal.ZERO) <= 0) {
-                sendJsonResponse(response, false, "Price must be greater than 0");
-                return;
-            }
-            
-            if (stock < 0) {
-                sendJsonResponse(response, false, "Stock cannot be negative");
-                return;
-            }
-            
-            Product product = new Product(productName, description, price, stock, category);
-            product.setImageUrl(imageUrl);
-            product.setStatus("available");
-            
-            int productId = productDAO.insertProduct(product);
-            
-            if (productId > 0) {
-                sendJsonResponse(response, true, "Product added successfully (ID: " + productId + ")");
+
+            // Default values
+            if (description == null) description = "";
+            if (imageUrl == null) imageUrl = "";
+            if (status == null || status.trim().isEmpty()) status = "available";
+
+            // Create product
+            Product product = productService.addProduct(name, description, price, stock,
+                    category, imageUrl, status);
+
+            if (product != null) {
+                JsonObject jsonResponse = new JsonObject();
+                jsonResponse.addProperty("success", true);
+                jsonResponse.addProperty("message", "Product added successfully");
+                jsonResponse.add("product", gson.toJsonTree(product));
+
+                sendJsonResponse(response, jsonResponse);
             } else {
-                sendJsonResponse(response, false, "Failed to add product");
+                sendErrorResponse(response, "Failed to add product");
             }
-            
+
         } catch (NumberFormatException e) {
-            sendJsonResponse(response, false, "Invalid number format");
-        } catch (Exception e) {
-            e.printStackTrace();
-            sendJsonResponse(response, false, "Error adding product: " + e.getMessage());
+            sendErrorResponse(response, "Invalid price or stock format");
         }
     }
-    
-    /**
-     * Update product (Admin only)
-     */
-    private void updateProduct(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        
+
+    // ================================
+    // Update Product Handler (Admin only)
+    // ================================
+
+    private void handleUpdateProduct(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+
+        String productIdStr = request.getParameter("productId");
+        String name = request.getParameter("name");
+        String description = request.getParameter("description");
+        String priceStr = request.getParameter("price");
+        String stockStr = request.getParameter("stock");
+        String category = request.getParameter("category");
+        String imageUrl = request.getParameter("imageUrl");
+        String status = request.getParameter("status");
+
+        if (productIdStr == null || productIdStr.trim().isEmpty()) {
+            sendErrorResponse(response, "Product ID is required");
+            return;
+        }
+
         try {
-            String productIdStr = request.getParameter("productId");
-            
-            if (productIdStr == null) {
-                sendJsonResponse(response, false, "Product ID is required");
-                return;
-            }
-            
             int productId = Integer.parseInt(productIdStr);
-            Product product = productDAO.getProductById(productId);
-            
+
+            // Get existing product
+            Product product = productService.getProductById(productId);
+
             if (product == null) {
-                sendJsonResponse(response, false, "Product not found");
+                sendErrorResponse(response, "Product not found");
                 return;
             }
-            
+
             // Update fields if provided
-            String productName = request.getParameter("productName");
-            if (productName != null && !productName.trim().isEmpty()) {
-                product.setProductName(productName);
+            if (name != null && !name.trim().isEmpty()) {
+                product.setProductName(name);
             }
-            
-            String description = request.getParameter("description");
             if (description != null) {
                 product.setDescription(description);
             }
-            
-            String priceStr = request.getParameter("price");
             if (priceStr != null && !priceStr.trim().isEmpty()) {
-                product.setPrice(new BigDecimal(priceStr));
+                product.setPrice(Double.parseDouble(priceStr));
             }
-            
-            String stockStr = request.getParameter("stock");
             if (stockStr != null && !stockStr.trim().isEmpty()) {
                 product.setStock(Integer.parseInt(stockStr));
             }
-            
-            String category = request.getParameter("category");
             if (category != null && !category.trim().isEmpty()) {
                 product.setCategory(category);
             }
-            
-            String imageUrl = request.getParameter("imageUrl");
             if (imageUrl != null) {
                 product.setImageUrl(imageUrl);
             }
-            
-            String status = request.getParameter("status");
             if (status != null && !status.trim().isEmpty()) {
                 product.setStatus(status);
             }
-            
-            boolean updated = productDAO.updateProduct(product);
-            
-            if (updated) {
-                sendJsonResponse(response, true, "Product updated successfully");
+
+            // Update product
+            boolean success = productService.updateProduct(product);
+
+            if (success) {
+                JsonObject jsonResponse = new JsonObject();
+                jsonResponse.addProperty("success", true);
+                jsonResponse.addProperty("message", "Product updated successfully");
+                jsonResponse.add("product", gson.toJsonTree(product));
+
+                sendJsonResponse(response, jsonResponse);
             } else {
-                sendJsonResponse(response, false, "Failed to update product");
+                sendErrorResponse(response, "Failed to update product");
             }
-            
+
         } catch (NumberFormatException e) {
-            sendJsonResponse(response, false, "Invalid number format");
-        } catch (Exception e) {
-            e.printStackTrace();
-            sendJsonResponse(response, false, "Error updating product: " + e.getMessage());
+            sendErrorResponse(response, "Invalid number format");
         }
     }
-    
-    /**
-     * Delete product (Admin only)
-     */
-    private void deleteProduct(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        
+
+    // ================================
+    // Delete Product Handler (Admin only)
+    // ================================
+
+    private void handleDeleteProduct(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+
         String productIdStr = request.getParameter("productId");
-        
+
         if (productIdStr == null || productIdStr.trim().isEmpty()) {
-            sendJsonResponse(response, false, "Product ID is required");
+            sendErrorResponse(response, "Product ID is required");
             return;
         }
-        
+
         try {
             int productId = Integer.parseInt(productIdStr);
-            boolean deleted = productDAO.deleteProduct(productId);
-            
-            if (deleted) {
-                sendJsonResponse(response, true, "Product deleted successfully");
+            boolean success = productService.deleteProduct(productId);
+
+            if (success) {
+                JsonObject jsonResponse = new JsonObject();
+                jsonResponse.addProperty("success", true);
+                jsonResponse.addProperty("message", "Product deleted successfully");
+
+                sendJsonResponse(response, jsonResponse);
             } else {
-                sendJsonResponse(response, false, "Product not found");
+                sendErrorResponse(response, "Failed to delete product (may be referenced in orders)");
             }
-            
+
         } catch (NumberFormatException e) {
-            sendJsonResponse(response, false, "Invalid product ID format");
-        } catch (Exception e) {
-            e.printStackTrace();
-            sendJsonResponse(response, false, "Error deleting product: " + e.getMessage());
+            sendErrorResponse(response, "Invalid product ID format");
         }
     }
-    
+
+    // ================================
+    // Helper Methods
+    // ================================
+
     /**
-     * Send JSON response for single product
+     * Check if current user is admin
      */
-    private void sendProductResponse(HttpServletResponse response, boolean success, String message, Product product)
-            throws IOException {
-        
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-        
-        PrintWriter out = response.getWriter();
-        StringBuilder json = new StringBuilder();
-        
-        json.append("{");
-        json.append("\"success\":").append(success).append(",");
-        json.append("\"message\":\"").append(escapeJson(message)).append("\"");
-        
-        if (product != null) {
-            json.append(",\"product\":").append(productToJson(product));
+    private boolean isAdmin(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+
+        if (session != null && session.getAttribute("role") != null) {
+            String role = (String) session.getAttribute("role");
+            return "admin".equalsIgnoreCase(role);
         }
-        
-        json.append("}");
-        
-        out.print(json.toString());
-        out.flush();
+
+        return false;
     }
-    
+
     /**
-     * Send JSON response for product list
+     * Send JSON response
      */
-    private void sendProductListResponse(HttpServletResponse response, boolean success, String message, List<Product> products)
+    private void sendJsonResponse(HttpServletResponse response, JsonObject jsonObject)
             throws IOException {
-        
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-        
         PrintWriter out = response.getWriter();
-        StringBuilder json = new StringBuilder();
-        
-        json.append("{");
-        json.append("\"success\":").append(success).append(",");
-        json.append("\"message\":\"").append(escapeJson(message)).append("\",");
-        json.append("\"count\":").append(products.size()).append(",");
-        json.append("\"products\":[");
-        
-        for (int i = 0; i < products.size(); i++) {
-            json.append(productToJson(products.get(i)));
-            if (i < products.size() - 1) {
-                json.append(",");
-            }
-        }
-        
-        json.append("]}");
-        
-        out.print(json.toString());
+        out.print(jsonObject.toString());
         out.flush();
     }
-    
+
     /**
-     * Convert Product object to JSON string
+     * Send error response
      */
-    private String productToJson(Product product) {
-        StringBuilder json = new StringBuilder();
-        json.append("{");
-        json.append("\"productId\":").append(product.getProductId()).append(",");
-        json.append("\"productName\":\"").append(escapeJson(product.getProductName())).append("\",");
-        json.append("\"description\":\"").append(escapeJson(product.getDescription() != null ? product.getDescription() : "")).append("\",");
-        json.append("\"price\":").append(product.getPrice()).append(",");
-        json.append("\"stock\":").append(product.getStock()).append(",");
-        json.append("\"category\":\"").append(escapeJson(product.getCategory())).append("\",");
-        json.append("\"imageUrl\":\"").append(escapeJson(product.getImageUrl() != null ? product.getImageUrl() : "")).append("\",");
-        json.append("\"status\":\"").append(escapeJson(product.getStatus())).append("\",");
-        json.append("\"isAvailable\":").append(product.isAvailable()).append(",");
-        json.append("\"isInStock\":").append(product.isInStock()).append(",");
-        json.append("\"isLowStock\":").append(product.isLowStock());
-        json.append("}");
-        return json.toString();
-    }
-    
-    /**
-     * Send simple JSON response
-     */
-    private void sendJsonResponse(HttpServletResponse response, boolean success, String message)
+    private void sendErrorResponse(HttpServletResponse response, String message)
             throws IOException {
-        
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-        
-        PrintWriter out = response.getWriter();
-        out.print("{\"success\":" + success + ",\"message\":\"" + escapeJson(message) + "\"}");
-        out.flush();
-    }
-    
-    /**
-     * Escape special characters for JSON
-     */
-    private String escapeJson(String str) {
-        if (str == null) return "";
-        return str.replace("\\", "\\\\")
-                  .replace("\"", "\\\"")
-                  .replace("\n", "\\n")
-                  .replace("\r", "\\r")
-                  .replace("\t", "\\t");
+        JsonObject jsonResponse = new JsonObject();
+        jsonResponse.addProperty("success", false);
+        jsonResponse.addProperty("message", message);
+
+        sendJsonResponse(response, jsonResponse);
     }
 }

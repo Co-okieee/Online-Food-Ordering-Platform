@@ -3,48 +3,277 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Product Management</title>
+  <title>Admin Dashboard - FoodHub</title>
   <link rel="stylesheet" href="../css/admin.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-  <div class="container">
-    <div id="userbar">
-      <span id="userinfo"></span>
-      <div>
-        <a href="index.html">Home</a>
-        <button id="logoutBtn">Logout</button>
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <div class="nav-left">
+        <a href="index.html" class="logo">
+          <span class="logo-icon">🍽️</span>
+          <span class="logo-text">FoodHub Admin</span>
+        </a>
+      </div>
+      
+      <div class="nav-center">
+        <ul class="nav-menu">
+          <li><a href="#dashboard" class="nav-link active">Dashboard</a></li>
+          <li><a href="#products" class="nav-link">Products</a></li>
+          <li><a href="#orders" class="nav-link">Orders</a></li>
+          <li><a href="#users" class="nav-link">Users</a></li>
+        </ul>
+      </div>
+      
+      <div class="nav-right">
+        <div class="admin-info">
+          <span class="admin-icon">👤</span>
+          <span class="admin-name" id="adminName">Admin</span>
+        </div>
+        <button class="btn-logout" id="logoutBtn">Logout</button>
       </div>
     </div>
-    
-    <h1>Product Management</h1>
-    
-    <div class="section">
-      <h2>Product List</h2>
-      <div id="products" class="grid"></div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="container">
+      <!-- Page Header -->
+      <header class="page-header">
+        <div class="header-left">
+          <h1 class="page-title">Dashboard</h1>
+          <p class="page-subtitle">Welcome back! Here's what's happening today.</p>
+        </div>
+        <div class="header-right">
+          <span class="last-update">Last updated: <span id="lastUpdate">--</span></span>
+        </div>
+      </header>
+
+      <!-- Stats Overview -->
+      <section class="stats-section">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">📦</div>
+            <div class="stat-content">
+              <h3 class="stat-title">Total Orders</h3>
+              <p class="stat-value" id="totalOrders">--</p>
+              <span class="stat-change positive">+12% from last month</span>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon">🍕</div>
+            <div class="stat-content">
+              <h3 class="stat-title">Total Products</h3>
+              <p class="stat-value" id="totalProducts">--</p>
+              <span class="stat-change">Updated today</span>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon">👥</div>
+            <div class="stat-content">
+              <h3 class="stat-title">Total Users</h3>
+              <p class="stat-value" id="totalUsers">--</p>
+              <span class="stat-change positive">+5 new users</span>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon">💰</div>
+            <div class="stat-content">
+              <h3 class="stat-title">Revenue</h3>
+              <p class="stat-value" id="totalRevenue">--</p>
+              <span class="stat-change positive">+18% from last month</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Management Sections -->
+      <div class="management-sections">
+        <!-- Product Management -->
+        <section class="management-section" id="productManagement">
+          <div class="section-header">
+            <h2 class="section-title">Product Management</h2>
+            <button class="btn-primary" id="addProductBtn">
+              <span>➕</span>
+              <span>Add New Product</span>
+            </button>
+          </div>
+
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Name</th>
+                  <th>Category</th>
+                  <th>Price</th>
+                  <th>Stock</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="productsTableBody">
+                <tr>
+                  <td colspan="7" class="loading-cell">Loading products...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Order Management -->
+        <section class="management-section" id="orderManagement">
+          <div class="section-header">
+            <h2 class="section-title">Recent Orders</h2>
+            <div class="filter-buttons">
+              <button class="filter-btn active" data-status="all">All</button>
+              <button class="filter-btn" data-status="pending">Pending</button>
+              <button class="filter-btn" data-status="completed">Completed</button>
+            </div>
+          </div>
+
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Order ID</th>
+                  <th>Customer</th>
+                  <th>Date</th>
+                  <th>Total</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="ordersTableBody">
+                <tr>
+                  <td colspan="6" class="loading-cell">Loading orders...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- User Management -->
+        <section class="management-section" id="userManagement">
+          <div class="section-header">
+            <h2 class="section-title">User Management</h2>
+            <div class="search-box">
+              <input type="text" id="userSearch" placeholder="Search users...">
+              <span class="search-icon">🔍</span>
+            </div>
+          </div>
+
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Username</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Joined</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="usersTableBody">
+                <tr>
+                  <td colspan="6" class="loading-cell">Loading users...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
     </div>
-    
-    <div class="section">
-      <h2>Add New Product</h2>
-      <form id="addForm">
+  </main>
+
+  <!-- Add/Edit Product Modal -->
+  <div class="modal" id="productModal">
+    <div class="modal-overlay"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="productModalTitle">Add New Product</h3>
+        <button class="modal-close" id="closeProductModal">&times;</button>
+      </div>
+      
+      <form id="productForm" class="modal-form">
+        <input type="hidden" id="productId" name="productId">
+        
         <div class="form-group">
-          <label>Product Name</label>
-          <input type="text" name="name" placeholder="Enter product name" required>
+          <label for="productName">Product Name</label>
+          <input type="text" id="productName" name="productName" required>
         </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="productCategory">Category</label>
+            <select id="productCategory" name="productCategory" required>
+              <option value="">Select Category</option>
+              <option value="Pizza">Pizza</option>
+              <option value="Burger">Burger</option>
+              <option value="Pasta">Pasta</option>
+              <option value="Dessert">Dessert</option>
+              <option value="Beverage">Beverage</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="productPrice">Price ($)</label>
+            <input type="number" id="productPrice" name="productPrice" step="0.01" required>
+          </div>
+        </div>
+        
         <div class="form-group">
-          <label>Price (¥)</label>
-          <input type="number" step="0.01" name="price" placeholder="0.00" required>
+          <label for="productDescription">Description</label>
+          <textarea id="productDescription" name="productDescription" rows="3"></textarea>
         </div>
-        <div class="form-group">
-          <label>Stock Quantity</label>
-          <input type="number" name="stock" placeholder="0" required>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="productStock">Stock</label>
+            <input type="number" id="productStock" name="productStock" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="productStatus">Status</label>
+            <select id="productStatus" name="productStatus" required>
+              <option value="available">Available</option>
+              <option value="unavailable">Unavailable</option>
+            </select>
+          </div>
         </div>
-        <button type="submit">Add Product</button>
+        
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" id="cancelProductBtn">Cancel</button>
+          <button type="submit" class="btn-primary">Save Product</button>
+        </div>
       </form>
     </div>
-   
-    <div id="msg"></div>
   </div>
-  
+
+  <!-- Toast Notification -->
+  <div class="toast" id="toast">
+    <span class="toast-icon">✓</span>
+    <span class="toast-message"></span>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <p>&copy; 2024 FoodHub Admin Panel. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- JavaScript -->
   <script src="../js/admin.js"></script>
 </body>
 </html>

@@ -250,6 +250,12 @@ body {
   margin-bottom: var(--spacing-sm);
 }
 
+.product-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
 .page-subtitle {
   font-size: 1.25rem;
   color: var(--text-medium);
@@ -505,13 +511,14 @@ body {
 
 .product-image {
   position: relative;
-  height: 200px;
-  background: linear-gradient(135deg, var(--bg-cream), #FFE8D6);
+  width: 100%;
+  height: 240px;
+  background: linear-gradient(135deg, #FFF5E1 0%, #FFE4B5 100%);
+  border-radius: 16px 16px 0 0;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 5rem;
-  overflow: hidden;
 }
 
 .stock-badge {

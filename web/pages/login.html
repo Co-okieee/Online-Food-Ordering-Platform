@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sign In - FoodHub</title>
-  <link rel="stylesheet" href="../css/login.css">
+  <link rel="stylesheet" href="/201Project/css/login.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -14,7 +14,7 @@
   <nav class="navbar" id="navbar">
     <div class="nav-container">
       <div class="nav-left">
-        <a href="index.html" class="logo">
+        <a href="/201Project/pages/index.html" class="logo">
           <span class="logo-icon">🍽️</span>
           <span class="logo-text">FoodHub</span>
         </a>
@@ -22,15 +22,15 @@
       
       <div class="nav-center">
         <ul class="nav-menu">
-          <li><a href="index.html" class="nav-link">Home</a></li>
-          <li><a href="product.html" class="nav-link">Menu</a></li>
-          <li><a href="about.html" class="nav-link">About</a></li>
-          <li><a href="contact.html" class="nav-link">Contact</a></li>
+          <li><a href="/201Project/pages/index.html" class="nav-link">Home</a></li>
+          <li><a href="/201Project/pages/product.html" class="nav-link">Menu</a></li>
+          <li><a href="/201Project/pages/about.html" class="nav-link">About</a></li>
+          <li><a href="/201Project/pages/contact.html" class="nav-link">Contact</a></li>
         </ul>
       </div>
       
       <div class="nav-right">
-        <a href="register.html" class="btn-register">Sign Up</a>
+        <a href="/201Project/pages/register.html" class="btn-register">Sign Up</a>
       </div>
     </div>
   </nav>
@@ -76,29 +76,29 @@
             <p class="form-subtitle">Enter your credentials to access your account</p>
           </div>
 
-          <!-- Role Selection -->
-          <div class="role-selector">
-            <label class="role-label">Login As:</label>
-            <div class="role-options">
-              <label class="role-option">
-                <input type="radio" name="role" value="customer" checked>
-                <div class="role-card">
-                  <span class="role-icon">👤</span>
-                  <span class="role-name">Customer</span>
-                </div>
-              </label>
-              
-              <label class="role-option">
-                <input type="radio" name="role" value="admin">
-                <div class="role-card">
-                  <span class="role-icon">🔑</span>
-                  <span class="role-name">Admin</span>
-                </div>
-              </label>
-            </div>
-          </div>
-
           <form id="loginForm" class="auth-form">
+            <!-- Role Selection -->
+            <div class="role-selector">
+              <label class="role-label">Login As:</label>
+              <div class="role-options">
+                <label class="role-option">
+                  <input type="radio" name="role" value="user" checked>
+                  <div class="role-card">
+                    <span class="role-icon">👤</span>
+                    <span class="role-name">Customer</span>
+                  </div>
+                </label>
+                
+                <label class="role-option">
+                  <input type="radio" name="role" value="admin">
+                  <div class="role-card">
+                    <span class="role-icon">🔑</span>
+                    <span class="role-name">Admin</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+
             <!-- Username Input -->
             <div class="form-group">
               <label for="username">Username</label>
@@ -164,9 +164,9 @@
         <div class="footer-section">
           <h4 class="footer-heading">Quick Links</h4>
           <ul class="footer-links">
-            <li><a href="product.html">Menu</a></li>
-            <li><a href="about.html">About Us</a></li>
-            <li><a href="contact.html">Contact</a></li>
+            <li><a href="/201Project/pages/product.html">Menu</a></li>
+            <li><a href="/201Project/pages/about.html">About Us</a></li>
+            <li><a href="/201Project/pages/contact.html">Contact</a></li>
           </ul>
         </div>
         
@@ -186,6 +186,6 @@
   </footer>
 
   <!-- JavaScript -->
-  <script src="../js/login.js"></script>
+  <script src="/201Project/js/login.js"></script>
 </body>
 </html>

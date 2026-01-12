@@ -320,3 +320,235 @@ UNION ALL
 SELECT 'Orders', COUNT(*) FROM orders
 UNION ALL
 SELECT 'Order Items', COUNT(*) FROM order_items;
+
+-- ========================================
+-- Food Ordering System - Sample Data Insert
+-- Description: Insert sample data for testing
+-- Version: Oracle compatible
+-- ========================================
+
+-- ========================================
+-- Insert Sample Users
+-- Password: All passwords are 'password123' (you should hash these in production)
+-- ========================================
+
+-- Insert Admin User
+INSERT INTO users (username, password, email, full_name, phone, role, status)
+VALUES ('admin', 'password123', 'admin@foodhub.com', 'System Administrator', '1234567890', 'admin', 'active');
+
+-- Insert Regular Users (Customers)
+INSERT INTO users (username, password, email, full_name, phone, role, status)
+VALUES ('john', 'password123', 'john@example.com', 'John Smith', '1234567891', 'user', 'active');
+
+INSERT INTO users (username, password, email, full_name, phone, role, status)
+VALUES ('mary', 'password123', 'mary@example.com', 'Mary Johnson', '1234567892', 'user', 'active');
+
+INSERT INTO users (username, password, email, full_name, phone, role, status)
+VALUES ('david', 'password123', 'david@example.com', 'David Brown', '1234567893', 'user', 'active');
+
+INSERT INTO users (username, password, email, full_name, phone, role, status)
+VALUES ('cookie', 'password123', 'cookie@example.com', 'Cookie Monster', '1234567894', 'user', 'active');
+
+COMMIT;
+
+-- ========================================
+-- Insert Sample Products
+-- Categories: appetizer, main_course, dessert, beverage
+-- ========================================
+
+-- Appetizers
+INSERT INTO products (product_name, description, price, stock, category, image_url, status)
+VALUES ('Caesar Salad', 'Fresh romaine lettuce with Caesar dressing, croutons, and parmesan cheese', 8.99, 50, 'appetizer', '/201Project/images/caesar-salad.jpg', 'available');
+
+INSERT INTO products (product_name, description, price, stock, category, image_url, status)
+VALUES ('Chicken Wings', 'Crispy chicken wings with your choice of sauce: BBQ, Buffalo, or Honey Garlic', 12.99, 40, 'appetizer', '/201Project/images/wings.jpg', 'available');
+
+INSERT INTO products (product_name, description, price, stock, category, image_url, status)
+VALUES ('Mozzarella Sticks', 'Golden fried mozzarella cheese sticks served with marinara sauce', 7.99, 60, 'appetizer', '/201Project/images/mozzarella.jpg', 'available');
+
+INSERT INTO products (product_name, description, price, stock, category, image_url, status)
+VALUES ('Bruschetta', 'Toasted bread topped with fresh tomatoes, basil, garlic, and olive oil', 9.99, 35, 'appetizer', '/201Project/images/bruschetta.jpg', 'available');
+
+INSERT INTO products (product_name, description, price, stock, category, image_url, status)
+VALUES ('Spring Rolls', 'Crispy vegetable spring rolls served with sweet chili sauce', 6.99, 45, 'appetizer', '/201Project/images/spring-rolls.jpg', 'available');
+
+-- Main Courses
+INSERT INTO products (product_name, description, price, stock, category, image_url, status)
+VALUES ('Margherita Pizza', 'Classic pizza with fresh mozzarella, tomatoes, and basil', 14.99, 30, 'main_course', '/201Project/images/margherita.jpg', 'available');
+
+INSERT INTO products (product_name, description, price, stock, category, image_url, status)
+VALUES ('Pepperoni Pizza', 'Traditional pizza loaded with pepperoni and mozzarella cheese', 16.99, 28, 'main_course', '/201Project/images/pepperoni.jpg', 'available');
+
+INSERT INTO products (product_name, description, price, stock, category, image_url, status)
+VALUES ('Grilled Salmon', 'Fresh Atlantic salmon grilled to perfection, served with vegetables and rice', 22.99, 20, 'main_course', '/201Project/images/salmon.jpg', 'available');
+
+INSERT INTO products (product_name, description, price, stock, category, image_url, status)
+VALUES ('Beef Burger', 'Juicy beef patty with lettuce, tomato, cheese, and special sauce', 13.99, 40, 'main_course', '/201Project/images/burger.jpg', 'available');
+
+INSERT INTO products (product_name, description, price, stock, category, image_url, status)
+VALUES ('Chicken Pasta', 'Creamy Alfredo pasta with grilled chicken and parmesan', 15.99, 35, 'main_course', '/201Project/images/pasta.jpg', 'available');
+
+INSERT INTO products (product_name, description, price, stock, category, image_url, status)
+VALUES ('Spaghetti Carbonara', 'Traditional Italian pasta with bacon, eggs, and parmesan cheese', 14.99, 32, 'main_course', '/201Project/images/carbonara.jpg', 'available');
+
+INSERT INTO products (product_name, description, price, stock, category, image_url, status)
+VALUES ('Ribeye Steak', 'Premium 12oz ribeye steak cooked to your preference with sides', 28.99, 15, 'main_course', '/201Project/images/steak.jpg', 'available');
+
+INSERT INTO products (product_name, description, price, stock, category, image_url, status)
+VALUES ('Fish and Chips', 'Crispy battered fish with golden fries and tartar sauce', 16.99, 25, 'main_course', '/201Project/images/fish-chips.jpg', 'available');
+
+INSERT INTO products (product_name, description, price, stock, category, image_url, status)
+VALUES ('Vegetable Stir Fry', 'Fresh mixed vegetables stir-fried in Asian sauce with rice', 12.99, 40, 'main_course', '/201Project/images/stirfry.jpg', 'available');
+
+INSERT INTO products (product_name, description, price, stock, category, image_url, status)
+VALUES ('BBQ Ribs', 'Slow-cooked pork ribs with BBQ sauce, served with coleslaw', 19.99, 18, 'main_course', '/201Project/images/ribs.jpg', 'available');
+
+-- Desserts
+INSERT INTO products (product_name, description, price, stock, category, image_url, status)
+VALUES ('Chocolate Cake', 'Rich chocolate layer cake with chocolate frosting', 6.99, 25, 'dessert', '/201Project/images/choco-cake.jpg', 'available');
+
+INSERT INTO products (product_name, description, price, stock, category, image_url, status)
+VALUES ('Cheesecake', 'New York style cheesecake with berry compote', 7.99, 20, 'dessert', '/201Project/images/cheesecake.jpg', 'available');
+
+INSERT INTO products (product_name, description, price, stock, category, image_url, status)
+VALUES ('Tiramisu', 'Classic Italian dessert with coffee-soaked ladyfingers and mascarpone', 8.99, 18, 'dessert', '/201Project/images/tiramisu.jpg', 'available');
+
+INSERT INTO products (product_name, description, price, stock, category, image_url, status)
+VALUES ('Ice Cream Sundae', 'Three scoops of ice cream with chocolate sauce, whipped cream, and cherry', 5.99, 40, 'dessert', '/201Project/images/sundae.jpg', 'available');
+
+INSERT INTO products (product_name, description, price, stock, category, image_url, status)
+VALUES ('Apple Pie', 'Warm apple pie with cinnamon, served with vanilla ice cream', 6.49, 22, 'dessert', '/201Project/images/apple-pie.jpg', 'available');
+
+INSERT INTO products (product_name, description, price, stock, category, image_url, status)
+VALUES ('Brownie', 'Warm chocolate brownie with walnuts and vanilla ice cream', 5.49, 35, 'dessert', '/201Project/images/brownie.jpg', 'available');
+
+-- Beverages
+INSERT INTO products (product_name, description, price, stock, category, image_url, status)
+VALUES ('Coca Cola', 'Classic Coca Cola (330ml)', 2.99, 100, 'beverage', '/201Project/images/coke.jpg', 'available');
+
+INSERT INTO products (product_name, description, price, stock, category, image_url, status)
+VALUES ('Fresh Orange Juice', 'Freshly squeezed orange juice', 4.99, 50, 'beverage', '/201Project/images/orange-juice.jpg', 'available');
+
+INSERT INTO products (product_name, description, price, stock, category, image_url, status)
+VALUES ('Iced Coffee', 'Cold brew coffee served over ice', 4.49, 60, 'beverage', '/201Project/images/iced-coffee.jpg', 'available');
+
+INSERT INTO products (product_name, description, price, stock, category, image_url, status)
+VALUES ('Lemonade', 'Homemade fresh lemonade', 3.99, 55, 'beverage', '/201Project/images/lemonade.jpg', 'available');
+
+INSERT INTO products (product_name, description, price, stock, category, image_url, status)
+VALUES ('Green Tea', 'Hot or iced green tea', 3.49, 70, 'beverage', '/201Project/images/green-tea.jpg', 'available');
+
+INSERT INTO products (product_name, description, price, stock, category, image_url, status)
+VALUES ('Mineral Water', 'Still or sparkling mineral water (500ml)', 2.49, 120, 'beverage', '/201Project/images/water.jpg', 'available');
+
+COMMIT;
+
+-- ========================================
+-- Insert Sample Orders (Optional - for testing order history)
+-- ========================================
+
+-- Order 1: John's order
+INSERT INTO orders (user_id, total_amount, status, delivery_address, payment_method, payment_status, notes)
+VALUES (2, 45.96, 'delivered', '123 Main Street, Apt 4B, New York, NY 10001', 'card', 'paid', 'Please ring doorbell');
+
+-- Order items for Order 1
+INSERT INTO order_items (order_id, product_id, quantity, unit_price, subtotal)
+VALUES (1, 6, 1, 14.99, 14.99);  -- Margherita Pizza
+
+INSERT INTO order_items (order_id, product_id, quantity, unit_price, subtotal)
+VALUES (1, 2, 1, 12.99, 12.99);  -- Chicken Wings
+
+INSERT INTO order_items (order_id, product_id, quantity, unit_price, subtotal)
+VALUES (1, 16, 1, 6.99, 6.99);   -- Chocolate Cake
+
+INSERT INTO order_items (order_id, product_id, quantity, unit_price, subtotal)
+VALUES (1, 22, 2, 2.99, 5.98);   -- Coca Cola x2
+
+-- Order 2: Mary's order
+INSERT INTO orders (user_id, total_amount, status, delivery_address, payment_method, payment_status, notes)
+VALUES (3, 38.97, 'preparing', '456 Oak Avenue, Los Angeles, CA 90001', 'cash', 'pending', 'No onions please');
+
+-- Order items for Order 2
+INSERT INTO order_items (order_id, product_id, quantity, unit_price, subtotal)
+VALUES (2, 8, 1, 22.99, 22.99);  -- Grilled Salmon
+
+INSERT INTO order_items (order_id, product_id, quantity, unit_price, subtotal)
+VALUES (2, 1, 1, 8.99, 8.99);    -- Caesar Salad
+
+INSERT INTO order_items (order_id, product_id, quantity, unit_price, subtotal)
+VALUES (2, 23, 1, 4.99, 4.99);   -- Fresh Orange Juice
+
+INSERT INTO order_items (order_id, product_id, quantity, unit_price, subtotal)
+VALUES (2, 19, 1, 5.99, 5.99);   -- Ice Cream Sundae
+
+-- Order 3: Cookie's pending order
+INSERT INTO orders (user_id, total_amount, status, delivery_address, payment_method, payment_status, notes)
+VALUES (5, 29.97, 'pending', '789 Cookie Lane, Chicago, IL 60601', 'online', 'pending', 'Leave at door');
+
+-- Order items for Order 3
+INSERT INTO order_items (order_id, product_id, quantity, unit_price, subtotal)
+VALUES (3, 7, 1, 16.99, 16.99);  -- Pepperoni Pizza
+
+INSERT INTO order_items (order_id, product_id, quantity, unit_price, subtotal)
+VALUES (3, 22, 1, 2.99, 2.99);   -- Coca Cola
+
+INSERT INTO order_items (order_id, product_id, quantity, unit_price, subtotal)
+VALUES (3, 21, 1, 5.49, 5.49);   -- Brownie
+
+COMMIT;
+
+-- ========================================
+-- Verification Queries
+-- ========================================
+
+-- Count records in each table
+SELECT 'Users' AS table_name, COUNT(*) AS record_count FROM users
+UNION ALL
+SELECT 'Products', COUNT(*) FROM products
+UNION ALL
+SELECT 'Orders', COUNT(*) FROM orders
+UNION ALL
+SELECT 'Order Items', COUNT(*) FROM order_items;
+
+-- Show all users
+SELECT user_id, username, email, full_name, role, status FROM users ORDER BY user_id;
+
+-- Show all products by category
+SELECT product_id, product_name, price, stock, category, status 
+FROM products 
+ORDER BY category, product_name;
+
+-- Show all orders with user info
+SELECT 
+    o.order_id,
+    u.username,
+    o.order_date,
+    o.total_amount,
+    o.status,
+    o.payment_status
+FROM orders o
+JOIN users u ON o.user_id = u.user_id
+ORDER BY o.order_id;
+
+-- Show order details
+SELECT 
+    o.order_id,
+    u.username,
+    p.product_name,
+    oi.quantity,
+    oi.unit_price,
+    oi.subtotal
+FROM order_items oi
+JOIN orders o ON oi.order_id = o.order_id
+JOIN users u ON o.user_id = u.user_id
+JOIN products p ON oi.product_id = p.product_id
+ORDER BY o.order_id, oi.order_item_id;
+
+-- ========================================
+-- Success Message
+-- ========================================
+SELECT 'Sample data inserted successfully!' AS message FROM dual;
+SELECT 'Total Users: ' || COUNT(*) AS info FROM users;
+SELECT 'Total Products: ' || COUNT(*) AS info FROM products;
+SELECT 'Total Orders: ' || COUNT(*) AS info FROM orders;
+SELECT 'Total Order Items: ' || COUNT(*) AS info FROM order_items;

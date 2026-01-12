@@ -110,6 +110,13 @@ async function loadProducts() {
     
     if (data.success && data.products) {
       allProducts = data.products;
+      // Process products to add convenience flags
+      allProducts = data.products.map(p => ({
+        ...p,
+        isAvailable: p.status === 'available',
+        isInStock: p.stock > 0,
+        isLowStock: p.stock > 0 && p.stock <= 10
+      }));
       filteredProducts = [...allProducts];
       
       // Apply category filter if set from URL
@@ -473,6 +480,7 @@ function displayProducts(products) {
 // ================================
 
 function createProductCard(product) {
+
   const card = document.createElement('div');
   card.className = 'product-card';
   
@@ -499,8 +507,7 @@ function createProductCard(product) {
   let imageHTML;
   if (product.imageUrl && product.imageUrl.trim() !== '') {
     // Use actual image
-    imageHTML = `<img src="../${product.imageUrl}" alt="${escapeHtml(product.productName)}" 
-                      onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+    imageHTML = `<img src="/201Project/${product.imageUrl}" alt="${escapeHtml(product.productName)}"                      onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
                  <div style="font-size: 5rem; display: none;">${emoji}</div>`;
   } else {
     // Use emoji as fallback

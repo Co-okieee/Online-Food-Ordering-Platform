@@ -62,18 +62,19 @@ public class OrderServlet extends HttpServlet {
             return;
         }
 
-        // Check authentication
+        if ("list".equals(action) || "getUserOrders".equals(action)) {
+            getUserOrders(request, response);
+            return;
+        }
+
         if (!isLoggedIn(request)) {
             sendErrorResponse(response, "Unauthorized - Please login");
             return;
         }
 
         switch (action) {
-            case "list":
-                handleListOrders(request, response);
-                break;
             case "listAll":
-                handleListAllOrders(request, response);
+                getAllOrders(request, response);
                 break;
             case "get":
                 handleGetOrder(request, response);
@@ -208,71 +209,137 @@ public class OrderServlet extends HttpServlet {
     }
 
     // ================================
-    // List Orders Handler
+    // get User Orders
     // ================================
+    private void getUserOrders(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        System.out.println("getUserOrders called");
+        try {
+            HttpSession session = request.getSession(false);
+            if (session == null || session.getAttribute("user") == null) {
+                sendErrorResponse(response, "Please login to view orders");
+                return;
+            }
 
-    private void handleListOrders(HttpServletRequest request, HttpServletResponse response)
-            throws IOException {
+            User user = (User) session.getAttribute("user");
+            int userId = user.getUserId();
 
-        HttpSession session = request.getSession(false);
-        int userId = (Integer) session.getAttribute("userId");
+            List<Order> orders = orderService.getOrdersByUserId(userId);
 
-        String status = request.getParameter("status");
+            for (Order order : orders) {
+                List<OrderItem> items = orderService.getOrderItemsByOrderId(order.getOrderId());
+                order.setOrderItems(items);
+            }
 
-        List<Order> orders;
+            JsonArray ordersArray = new JsonArray();
+            for (Order order : orders) {
+                JsonObject orderJson = new JsonObject();
+                orderJson.addProperty("orderId", order.getOrderId());
+                orderJson.addProperty("userId", order.getUserId());
+                orderJson.addProperty("orderDate", order.getOrderDate().toString());
+                orderJson.addProperty("totalAmount", order.getTotalAmount());
+                orderJson.addProperty("status", order.getStatus());
+                orderJson.addProperty("deliveryAddress", order.getDeliveryAddress());
+                orderJson.addProperty("paymentMethod", order.getPaymentMethod());
+                orderJson.addProperty("paymentStatus", order.getPaymentStatus());
+                orderJson.addProperty("notes", order.getNotes() != null ? order.getNotes() : "");
 
-        if (status != null && !status.isEmpty() && !status.equals("all")) {
-            // Filter by status
-            orders = orderService.getOrdersByStatus(status);
-            // Filter to only this user's orders
-            orders.removeIf(order -> order.getUserId() != userId);
-        } else {
-            // Get all orders for this user
-            orders = orderService.getOrdersByUserId(userId);
-        }
+                JsonArray itemsArray = new JsonArray();
+                for (OrderItem item : order.getOrderItems()) {
+                    JsonObject itemJson = new JsonObject();
+                    itemJson.addProperty("orderItemId", item.getOrderItemId());
+                    itemJson.addProperty("productId", item.getProductId());
+                    itemJson.addProperty("productName", item.getProductName());
+                    itemJson.addProperty("quantity", item.getQuantity());
+                    itemJson.addProperty("unitPrice", item.getUnitPrice());
+                    itemJson.addProperty("subtotal", item.getSubtotal());
+                    itemJson.addProperty("imageUrl", item.getImageUrl() != null ? item.getImageUrl() : "");
+                    itemJson.addProperty("category", item.getCategory() != null ? item.getCategory() : "");
+                    itemsArray.add(itemJson);
+                }
+                orderJson.add("items", itemsArray);
 
-        if (orders != null) {
+                ordersArray.add(orderJson);
+            }
+
             JsonObject jsonResponse = new JsonObject();
             jsonResponse.addProperty("success", true);
-            jsonResponse.add("orders", gson.toJsonTree(orders));
+            jsonResponse.add("orders", ordersArray);
 
             sendJsonResponse(response, jsonResponse);
-        } else {
-            sendErrorResponse(response, "Failed to retrieve orders");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            sendErrorResponse(response, "Error loading orders: " + e.getMessage());
         }
     }
 
     // ================================
-    // List All Orders Handler (Admin only)
+    // get All Orders
     // ================================
+    private void getAllOrders(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        try {
+            HttpSession session = request.getSession(false);
+            if (session == null || session.getAttribute("user") == null) {
+                sendErrorResponse(response, "Please login to view orders");
+                return;
+            }
 
-    private void handleListAllOrders(HttpServletRequest request, HttpServletResponse response)
-            throws IOException {
+            User user = (User) session.getAttribute("user");
+            if (!"admin".equals(user.getRole())) {
+                sendErrorResponse(response, "Unauthorized - Admin access required");
+                return;
+            }
 
-        // Check admin permission
-        if (!isAdmin(request)) {
-            sendErrorResponse(response, "Unauthorized - Admin access required");
-            return;
-        }
+            List<Order> orders = orderService.getAllOrders();
 
-        String status = request.getParameter("status");
+            for (Order order : orders) {
+                List<OrderItem> items = orderService.getOrderItemsByOrderId(order.getOrderId());
+                order.setOrderItems(items);
+            }
 
-        List<Order> orders;
+            JsonArray ordersArray = new JsonArray();
+            for (Order order : orders) {
+                JsonObject orderJson = new JsonObject();
+                orderJson.addProperty("orderId", order.getOrderId());
+                orderJson.addProperty("userId", order.getUserId());
+                orderJson.addProperty("username", order.getUsername());
+                orderJson.addProperty("orderDate", order.getOrderDate().toString());
+                orderJson.addProperty("totalAmount", order.getTotalAmount());
+                orderJson.addProperty("status", order.getStatus());
+                orderJson.addProperty("deliveryAddress", order.getDeliveryAddress());
+                orderJson.addProperty("paymentMethod", order.getPaymentMethod());
+                orderJson.addProperty("paymentStatus", order.getPaymentStatus());
+                orderJson.addProperty("notes", order.getNotes() != null ? order.getNotes() : "");
 
-        if (status != null && !status.isEmpty() && !status.equals("all")) {
-            orders = orderService.getOrdersByStatus(status);
-        } else {
-            orders = orderService.getAllOrders();
-        }
+                JsonArray itemsArray = new JsonArray();
+                for (OrderItem item : order.getOrderItems()) {
+                    JsonObject itemJson = new JsonObject();
+                    itemJson.addProperty("orderItemId", item.getOrderItemId());
+                    itemJson.addProperty("productId", item.getProductId());
+                    itemJson.addProperty("productName", item.getProductName());
+                    itemJson.addProperty("quantity", item.getQuantity());
+                    itemJson.addProperty("unitPrice", item.getUnitPrice());
+                    itemJson.addProperty("subtotal", item.getSubtotal());
+                    itemJson.addProperty("imageUrl", item.getImageUrl() != null ? item.getImageUrl() : "");
+                    itemJson.addProperty("category", item.getCategory() != null ? item.getCategory() : "");
+                    itemsArray.add(itemJson);
+                }
+                orderJson.add("items", itemsArray);
 
-        if (orders != null) {
+                ordersArray.add(orderJson);
+            }
+
             JsonObject jsonResponse = new JsonObject();
             jsonResponse.addProperty("success", true);
-            jsonResponse.add("orders", gson.toJsonTree(orders));
+            jsonResponse.add("orders", ordersArray);
 
             sendJsonResponse(response, jsonResponse);
-        } else {
-            sendErrorResponse(response, "Failed to retrieve orders");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            sendErrorResponse(response, "Error loading orders: " + e.getMessage());
         }
     }
 

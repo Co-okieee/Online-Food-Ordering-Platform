@@ -184,6 +184,8 @@ async function handleLogout() {
 // ================================
 
 async function loadOrders() {
+
+  
   const loadingState = document.getElementById('loadingState');
   const emptyState = document.getElementById('emptyState');
   const ordersList = document.getElementById('ordersList');
@@ -198,12 +200,13 @@ async function loadOrders() {
       method: 'GET',
       credentials: 'include'
     });
-    
+
     if (!response.ok) {
       throw new Error('Failed to fetch orders');
     }
     
     const data = await response.json();
+    console.log('Orders response:', data);
     
     if (data.success && data.orders) {
       allOrders = data.orders;

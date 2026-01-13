@@ -122,10 +122,6 @@ document.getElementById('cancelProductBtn').addEventListener('click', () => {
   document.getElementById('productModal').classList.remove('active');
 });
 
-document.querySelector('.modal-overlay').addEventListener('click', () => {
-  document.getElementById('productModal').classList.remove('active');
-});
-
 // Edit Product Function
 function editProduct(productId) {
   const product = currentProducts.find(p => p.productId === productId);
@@ -295,98 +291,50 @@ function viewOrder(orderId) {
   const order = currentOrders.find(o => o.orderId === orderId);
   if (!order) return;
   
-  // Fill order details with styled HTML
-  const orderInfoHTML = `
-    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 12px; margin-bottom: 20px;">
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-        <div>
-          <div style="opacity: 0.9; font-size: 13px; margin-bottom: 5px;">Order ID</div>
-          <div style="font-size: 24px; font-weight: 700;">#${order.orderId}</div>
-        </div>
-        <div style="text-align: right;">
-          <div style="opacity: 0.9; font-size: 13px; margin-bottom: 5px;">Total Amount</div>
-          <div style="font-size: 24px; font-weight: 700;">$${parseFloat(order.totalAmount).toFixed(2)}</div>
-        </div>
-      </div>
-    </div>
-    
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px;">
-      <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #667eea;">
-        <div style="color: #666; font-size: 12px; text-transform: uppercase; margin-bottom: 5px;">Customer</div>
-        <div style="font-size: 16px; font-weight: 600; color: #333;">${order.username || 'Guest'}</div>
-      </div>
-      
-      <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #667eea;">
-        <div style="color: #666; font-size: 12px; text-transform: uppercase; margin-bottom: 5px;">Order Date</div>
-        <div style="font-size: 16px; font-weight: 600; color: #333;">${new Date(order.orderDate).toLocaleString()}</div>
-      </div>
-      
-      <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #28a745;">
-        <div style="color: #666; font-size: 12px; text-transform: uppercase; margin-bottom: 5px;">Status</div>
-        <div style="display: inline-block; background: ${getStatusColor(order.status)}; color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px; font-weight: 600;">${order.status}</div>
-      </div>
-      
-      <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #ffc107;">
-        <div style="color: #666; font-size: 12px; text-transform: uppercase; margin-bottom: 5px;">Payment Method</div>
-        <div style="font-size: 16px; font-weight: 600; color: #333;">${order.paymentMethod}</div>
-      </div>
-    </div>
-    
-    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 25px;">
-      <div style="color: #666; font-size: 12px; text-transform: uppercase; margin-bottom: 8px;">Delivery Address</div>
-      <div style="font-size: 15px; color: #333; line-height: 1.5;">📍 ${order.deliveryAddress || 'N/A'}</div>
-    </div>
-  `;
+  // Fill order details
+  document.getElementById('orderDetailId').textContent = '#' + order.orderId;
+  document.getElementById('orderDetailCustomer').textContent = order.username || 'Guest';
+  document.getElementById('orderDetailDate').textContent = new Date(order.orderDate).toLocaleString();
   
-  document.getElementById('orderModalBody').innerHTML = orderInfoHTML;
+  // Set status with proper styling
+  const statusElement = document.getElementById('orderDetailStatus');
+  statusElement.textContent = order.status;
+  statusElement.className = 'status-badge ' + order.status;
   
-  // Load order items with beautiful styling
+  document.getElementById('orderDetailPayment').textContent = order.paymentMethod || 'N/A';
+  document.getElementById('orderDetailAddress').textContent = order.deliveryAddress || 'N/A';
+  document.getElementById('orderDetailTotal').textContent = '$' + parseFloat(order.totalAmount).toFixed(2);
+  
+  // Load order items
+  const itemsList = document.getElementById('orderItemsList');
+  itemsList.innerHTML = '<div class="loading-spinner">Loading items...</div>';
+  
   fetch(`/201Project/OrderServlet?action=get&orderId=${orderId}`)
     .then(res => res.json())
     .then(data => {
       if (data.success && data.order && data.order.orderItems) {
-        const itemsHTML = `
-          <div style="margin-top: 10px;">
-            <h4 style="color: #333; margin-bottom: 15px; font-size: 18px; border-bottom: 2px solid #667eea; padding-bottom: 10px;">🍽️ Order Items</h4>
-            <div style="background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-              ${data.order.orderItems.map((item, index) => `
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; border-bottom: 1px solid #f0f0f0; ${index % 2 === 0 ? 'background: #fafafa;' : ''}">
-                  <div style="flex: 2;">
-                    <div style="font-weight: 600; color: #333; font-size: 15px;">${item.productName}</div>
-                    <div style="color: #999; font-size: 13px; margin-top: 3px;">Unit Price: $${item.unitPrice.toFixed(2)}</div>
-                  </div>
-                  <div style="flex: 0.5; text-align: center;">
-                    <span style="background: #667eea; color: white; padding: 4px 12px; border-radius: 12px; font-weight: 600; font-size: 14px;">×${item.quantity}</span>
-                  </div>
-                  <div style="flex: 1; text-align: right;">
-                    <div style="font-weight: 700; color: #ff6b35; font-size: 18px;">$${item.subtotal.toFixed(2)}</div>
-                  </div>
-                </div>
-              `).join('')}
+        itemsList.innerHTML = data.order.orderItems.map(item => `
+          <div class="order-item-card">
+            <div class="item-info">
+              <div class="item-name">${item.productName}</div>
+              <div class="item-quantity">Quantity: ${item.quantity}</div>
+            </div>
+            <div class="item-pricing">
+              <div class="item-unit-price">$${item.unitPrice.toFixed(2)} each</div>
+              <div class="item-subtotal">$${item.subtotal.toFixed(2)}</div>
             </div>
           </div>
-        `;
-        document.getElementById('orderModalBody').innerHTML += itemsHTML;
+        `).join('');
+      } else {
+        itemsList.innerHTML = '<div class="error-message">Failed to load order items</div>';
       }
     })
     .catch(error => {
       console.error('Error loading order items:', error);
+      itemsList.innerHTML = '<div class="error-message">Failed to load order items</div>';
     });
   
   document.getElementById('orderModal').classList.add('active');
-}
-
-// Helper function for status colors
-function getStatusColor(status) {
-  const colors = {
-    'pending': '#ffc107',
-    'confirmed': '#17a2b8',
-    'preparing': '#ff6b35',
-    'ready': '#28a745',
-    'delivered': '#28a745',
-    'cancelled': '#dc3545'
-  };
-  return colors[status] || '#6c757d';
 }
 
 function closeOrderModal() {
@@ -427,7 +375,7 @@ function renderUsersTable(users) {
       <td>${user.username}</td>
       <td>${user.email || 'N/A'}</td>
       <td>
-        <span class="status-badge ${user.role === 'admin' ? 'unavailable' : 'available'}">
+        <span class="status-badge ${user.role === 'admin' ? 'admin-role' : 'user-role'}">
           ${user.role}
         </span>
       </td>
@@ -455,72 +403,22 @@ function viewUser(userId) {
   const user = currentUsers.find(u => u.userId === userId);
   if (!user) return;
   
-  // Create beautiful user details HTML
-  const userDetailsHTML = `
-    <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 30px; border-radius: 12px; margin-bottom: 25px; text-align: center;">
-      <div style="width: 80px; height: 80px; background: white; border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 36px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
-        ${user.role === 'admin' ? '👑' : '👤'}
-      </div>
-      <div style="font-size: 24px; font-weight: 700; margin-bottom: 5px;">${user.username}</div>
-      <div style="opacity: 0.9; font-size: 14px;">${user.email || 'No email'}</div>
-    </div>
-    
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
-      <div style="background: #f8f9fa; padding: 18px; border-radius: 10px; border-left: 4px solid #f093fb;">
-        <div style="color: #666; font-size: 12px; text-transform: uppercase; margin-bottom: 8px;">User ID</div>
-        <div style="font-size: 18px; font-weight: 700; color: #333;">#${user.userId}</div>
-      </div>
-      
-      <div style="background: #f8f9fa; padding: 18px; border-radius: 10px; border-left: 4px solid ${user.role === 'admin' ? '#dc3545' : '#28a745'};">
-        <div style="color: #666; font-size: 12px; text-transform: uppercase; margin-bottom: 8px;">Role</div>
-        <div style="display: inline-block; background: ${user.role === 'admin' ? '#dc3545' : '#28a745'}; color: white; padding: 6px 16px; border-radius: 20px; font-size: 14px; font-weight: 600; text-transform: capitalize;">
-          ${user.role === 'admin' ? '🔑 Admin' : '👤 User'}
-        </div>
-      </div>
-    </div>
-    
-    <div style="background: white; border-radius: 10px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); margin-bottom: 15px;">
-      <div style="border-bottom: 2px solid #f093fb; padding-bottom: 10px; margin-bottom: 20px;">
-        <h4 style="color: #333; font-size: 16px; margin: 0;">📋 Personal Information</h4>
-      </div>
-      
-      <div style="display: grid; gap: 15px;">
-        <div style="display: flex; justify-content: space-between; padding: 12px; background: #fafafa; border-radius: 8px;">
-          <span style="color: #666; font-weight: 500;">Full Name</span>
-          <span style="color: #333; font-weight: 600;">${user.fullName || 'N/A'}</span>
-        </div>
-        
-        <div style="display: flex; justify-content: space-between; padding: 12px; background: #fafafa; border-radius: 8px;">
-          <span style="color: #666; font-weight: 500;">📧 Email</span>
-          <span style="color: #333; font-weight: 600;">${user.email || 'N/A'}</span>
-        </div>
-        
-        <div style="display: flex; justify-content: space-between; padding: 12px; background: #fafafa; border-radius: 8px;">
-          <span style="color: #666; font-weight: 500;">📱 Phone</span>
-          <span style="color: #333; font-weight: 600;">${user.phone || 'Not provided'}</span>
-        </div>
-        
-        <div style="display: flex; justify-content: space-between; padding: 12px; background: #fafafa; border-radius: 8px;">
-          <span style="color: #666; font-weight: 500;">Status</span>
-          <span style="display: inline-block; background: ${user.status === 'active' ? '#28a745' : '#6c757d'}; color: white; padding: 4px 12px; border-radius: 12px; font-size: 13px; font-weight: 600; text-transform: capitalize;">
-            ${user.status || 'active'}
-          </span>
-        </div>
-        
-        <div style="display: flex; justify-content: space-between; padding: 12px; background: #fafafa; border-radius: 8px;">
-          <span style="color: #666; font-weight: 500;">📅 Joined</span>
-          <span style="color: #333; font-weight: 600;">${user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}</span>
-        </div>
-      </div>
-    </div>
-    
-    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 15px; border-radius: 8px; text-align: center; color: white;">
-      <div style="font-size: 13px; opacity: 0.9; margin-bottom: 5px;">Member since</div>
-      <div style="font-size: 16px; font-weight: 600;">${user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Unknown'}</div>
-    </div>
-  `;
+  // Fill user details
+  document.getElementById('userDetailId').textContent = user.userId;
+  document.getElementById('userDetailUsername').textContent = user.username;
+  document.getElementById('userDetailEmail').textContent = user.email || 'N/A';
+  document.getElementById('userDetailFullName').textContent = user.fullName || 'N/A';
+  document.getElementById('userDetailPhone').textContent = user.phone || 'N/A';
   
-  document.getElementById('userModal').querySelector('.modal-body').innerHTML = userDetailsHTML;
+  // Set role with proper styling
+  const roleElement = document.getElementById('userDetailRole');
+  roleElement.textContent = user.role;
+  roleElement.className = 'status-badge ' + (user.role === 'admin' ? 'admin-role' : 'user-role');
+  
+  document.getElementById('userDetailStatus').textContent = user.status || 'Active';
+  document.getElementById('userDetailJoined').textContent = user.createdAt ? 
+    new Date(user.createdAt).toLocaleDateString() : 'N/A';
+  
   document.getElementById('userModal').classList.add('active');
 }
 
@@ -536,12 +434,8 @@ function showToast(message, type = 'success') {
   const toastMessage = toast.querySelector('.toast-message');
   
   toastMessage.textContent = message;
-  toast.classList.remove('error');
-  
-  if (type === 'error') {
-    toast.classList.add('error');
-  }
-  
+  toast.classList.remove('error', 'success');
+  toast.classList.add(type);
   toast.classList.add('show');
   
   setTimeout(() => {
@@ -571,6 +465,24 @@ document.querySelectorAll('.nav-link').forEach(link => {
     } else if (target === 'users') {
       document.getElementById('userManagement').scrollIntoView({ behavior: 'smooth' });
     }
+  });
+});
+
+// ================================
+// Modal Overlay Click Handlers
+// ================================
+document.addEventListener('DOMContentLoaded', () => {
+  // Close modals when clicking overlay
+  const overlays = document.querySelectorAll('.modal-overlay');
+  overlays.forEach(overlay => {
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) {
+        const modal = overlay.closest('.modal');
+        if (modal) {
+          modal.classList.remove('active');
+        }
+      }
+    });
   });
 });
 

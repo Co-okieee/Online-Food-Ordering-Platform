@@ -831,7 +831,6 @@ function showUserMenu(user) {
     </div>
     <ul class="dropdown-menu">
       <li><a href="orders.html">My Orders</a></li>
-      <li><a href="cart.html">My Cart</a></li>
       ${user.role === 'admin' ? '<li><a href="admin.html">Admin Panel</a></li>' : ''}
       <li><a href="#" id="logoutLink">Logout</a></li>
     </ul>

@@ -24,8 +24,14 @@ body {
   background: #FAFAFA;
 }
 
+.container {
+  max-width: var(--container-width);
+  margin: 0 auto;
+  padding: 0 var(--spacing-md);
+}
+
 /* ================================
-   Navigation Bar (Simplified)
+   Navigation Bar
    ================================ */
 
 .navbar {
@@ -34,82 +40,115 @@ body {
   position: sticky;
   top: 0;
   z-index: 1000;
-  padding: 1rem 0;
 }
 
 .nav-container {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 0 2rem;
+  padding: 1rem 2rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
+
+.nav-left, .nav-right {
+  display: flex;
+  align-items: center;
+}
+
+.nav-center {
+  display: flex;
+  align-items: center;
+  margin-left: 2rem;   
+  flex: 0 0 auto;    
+}
+
 
 .logo {
   display: flex;
   align-items: center;
   gap: 0.75rem;
   text-decoration: none;
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--text-dark);
 }
 
 .logo-icon {
   font-size: 2rem;
 }
 
+.logo-text {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
 .nav-menu {
   display: flex;
   list-style: none;
-  gap: 2rem;
+  gap: 3rem;
 }
 
 .nav-link {
   text-decoration: none;
   color: var(--text-gray);
-  font-weight: 500;
+  font-weight: 600;
+  font-size: 1.2rem;
   transition: color 0.3s ease;
+  padding: 0.5rem 0;
 }
 
-.nav-link:hover {
+.nav-link:hover,
+.nav-link.active {
   color: var(--primary);
 }
 
-.nav-icon-btn {
-  position: relative;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: var(--bg-light);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.btn-login {
+  padding: 0.75rem 1.5rem;
+  background: var(--primary);
+  color: white;
   text-decoration: none;
-  font-size: 1.5rem;
+  border-radius: 25px;
+  font-weight: 600;
   transition: all 0.3s ease;
 }
 
-.nav-icon-btn:hover {
-  background: var(--primary);
-  transform: scale(1.05);
+.btn-login:hover {
+  background: var(--primary-dark);
+  transform: translateY(-2px);
 }
 
-.cart-count {
-  position: absolute;
-  top: -5px;
-  right: -5px;
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 1rem;
+  background: var(--bg-light);
+  border-radius: 25px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.user-info:hover {
+  background: var(--bg-cream);
+}
+
+.user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
   background: var(--primary);
   color: white;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.75rem;
   font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.user-name {
+  font-weight: 600;
+  color: var(--text-dark);
+  font-size: 0.95rem;
 }
 
 /* ================================
@@ -457,44 +496,3 @@ body {
 .toast-message {
   font-weight: 500;
 }
-
-/* ================================
-   Responsive Design
-   ================================ */
-
-@media (max-width: 1024px) {
-  .checkout-content {
-    grid-template-columns: 1fr;
-  }
-  
-  .order-summary-section {
-    position: static;
-    order: -1;
-  }
-}
-
-@media (max-width: 768px) {
-  .checkout-container {
-    padding: 0 1rem;
-    margin: 2rem auto;
-  }
-  
-  .checkout-form-section,
-  .order-summary-card {
-    padding: 1.5rem;
-  }
-  
-  .payment-options {
-    grid-template-columns: 1fr;
-  }
-  
-  .nav-container {
-    padding: 0 1rem;
-  }
-  
-  .nav-menu {
-    gap: 1rem;
-  }
-}
-
-/* Include cart sidebar styles from product.css here or import them */

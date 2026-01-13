@@ -5,6 +5,7 @@ import dao.OrderItemDAO;
 import model.Order;
 import model.OrderItem;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -200,6 +201,18 @@ public class OrderService {
         } catch (SQLException e) {
             System.err.println("Error getting orders by user ID: " + e.getMessage());
             return null;
+        }
+    }
+
+    /**
+     * get Order Items By Order Id
+     */
+    public List<OrderItem> getOrderItemsByOrderId(int orderId) {
+        try {
+            return orderItemDAO.getOrderItemsByOrderId(orderId);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return new ArrayList<>();
         }
     }
     

@@ -685,42 +685,35 @@ body {
   color: rgba(255, 255, 255, 0.7);
 }
 
-/* ================================
-   Responsive Design
-   ================================ */
-
-@media (max-width: 1024px) {
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
+.order-info {
+  margin: 20px 0;
 }
 
-@media (max-width: 768px) {
-  .page-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
-  }
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid #eee;
+}
 
-  .stats-grid {
-    grid-template-columns: 1fr;
-  }
+.info-label {
+  font-weight: 600;
+  color: #666;
+}
 
-  .section-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
-  }
+.info-value {
+  color: #333;
+}
 
-  .search-box {
-    width: 100%;
-  }
+.order-items-list {
+  margin-top: 15px;
+}
 
-  .form-row {
-    grid-template-columns: 1fr;
-  }
-
-  .nav-menu {
-    display: none;
-  }
+.order-item-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+  background: #f9f9f9;
+  margin-bottom: 5px;
+  border-radius: 4px;
 }

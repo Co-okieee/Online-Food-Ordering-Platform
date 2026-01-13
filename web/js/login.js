@@ -143,7 +143,15 @@ if (document.getElementById('regForm')) {
       } else {
         // Display error message from backend
         msgDiv.className = 'show error';
-        msgDiv.textContent = data.message || 'Registration failed. Please try again.';
+        
+        // Check for specific error messages
+        if (data.message && data.message.includes('Username already exists')) {
+          msgDiv.textContent = 'This username is already taken. Please choose another one.';
+        } else if (data.message && data.message.includes('Email already exists')) {
+          msgDiv.textContent = 'This email is already registered. Please use a different email or sign in.';
+        } else {
+          msgDiv.textContent = data.message || 'Registration failed. Please try again.';
+        }
       }
     } catch (error) {
       // Handle network or parsing errors

@@ -21,7 +21,6 @@ A modern, full-stack web application for online food ordering with separate user
 - **Order Management**:
   - View all customer orders
   - Filter orders by status (Pending, Confirmed, Preparing, Ready, Delivered, Cancelled)
-  - Update order status
   - View detailed order information with items
 - **User Management**:
   - View all registered users
@@ -56,7 +55,8 @@ A modern, full-stack web application for online food ordering with separate user
 ```
 201Project/
 ├── SQL/                          # Database scripts
-│   └── schema.sql               # Database schema and initial data
+│   │   create_tables.sql
+│   └── insert_sample_data.sql    # Database schema and initial data
 ├── src/
 │   ├── dao/                     # Data Access Objects
 │   │   ├── OrderDAO.java
@@ -70,20 +70,21 @@ A modern, full-stack web application for online food ordering with separate user
 │   │   └── User.java
 │   ├── service/                 # Business logic layer
 │   │   ├── OrderService.java
+│   │   ├── UserService.java
 │   │   └── ProductService.java
 │   ├── servlet/                 # HTTP request handlers
 │   │   ├── LoginServlet.java
 │   │   ├── OrderServlet.java
-│   │   ├── ProductServlet.java
-│   │   └── RegisterServlet.java
+│   │   └── ProductServlet.java
 │   └── util/                    # Utility classes
-│       └── DatabaseUtil.java
+│       └── DBConnection.java
 └── web/                         # Frontend files
     ├── pages/                   # HTML pages
     │   ├── index.html          # Homepage
     │   ├── product.html        # Product catalog
     │   ├── orders.html         # User order history
-    │   ├── about.html          # About page
+    │   ├── about.html          # checkout page
+    │   ├── checkout.html       # About page
     │   ├── contact.html        # Contact page
     │   ├── login.html          # Login page
     │   ├── register.html       # Registration page
@@ -94,11 +95,17 @@ A modern, full-stack web application for online food ordering with separate user
     │   ├── orders.css
     │   ├── about.css
     │   ├── contact.css
+    │   ├── checkout.css
+    │   ├── login.css
     │   └── admin.css
     └── js/                      # JavaScript files
         ├── index.js
         ├── product.js
         ├── orders.js
+        ├── about.js
+        ├── contact.js
+        ├── login.js
+        ├── checkout.js
         └── admin.js
 ```
 
@@ -118,40 +125,29 @@ A modern, full-stack web application for online food ordering with separate user
 ## Setup Instructions
 
 ### Prerequisites
-- Java JDK 8 or higher
-- Apache Tomcat 9.x or higher
-- MySQL 8.x
-- IDE (IntelliJ IDEA or Eclipse recommended)
-
-### Database Setup
-1. Create MySQL database:
-```sql
-CREATE DATABASE foodhub_db;
-```
-
-2. Run the schema script:
-```bash
-mysql -u root -p foodhub_db < SQL/schema.sql
-```
+- Java JDK 25
+- Apache Tomcat 9.x 
+- Oracle Database
+- IDE (IntelliJ IDEA)
 
 ### Application Setup
 1. Clone the repository
 2. Import project into your IDE as a Java Web Application
-3. Configure database connection in `DatabaseUtil.java`:
+3. Configure database connection in `DBConnection.java`:
    - Update database URL, username, and password
-4. Add MySQL Connector and Gson library to project dependencies
+4. Add Oracle Connector and Gson library to project dependencies
 5. Deploy to Tomcat server
 6. Access application at `http://localhost:8080/201Project/`
 
 ### Default Admin Account
 - Username: `admin`
-- Password: `admin123`
+- Password: `123456`
 - Role: `admin`
 
 ### Test User Account
 - Username: `Cookie`
 - Email: `fangsiying@student.usm.my`
-- Password: (as configured)
+- Password: 123456
 
 ## API Endpoints
 
@@ -217,11 +213,14 @@ mysql -u root -p foodhub_db < SQL/schema.sql
 - Write clean, documented code
 
 ## Contributors
-- SIYING FANG - Full-stack development
-- Cookie (GitHub: Co-okieeee)
+- Xiao Kang - Java Backend Logic
+- Jiang Zhiqian - Frontend Developer (Admin Module)
+- Fang Siying - Database, DAO & Project Manager
+- Lu Yajin - Frontend Developer (User Module)
+
 
 ## License
-Created for CAT201 Project - 2024
+Created for CAT201 Project - 2025
 
 ## Contact
 For questions or support, contact: fangsiying@student.usm.my

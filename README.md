@@ -43,7 +43,7 @@ A modern, full-stack web application for online food ordering with separate user
 - **Java** - Core language
 - **Java Servlets** - Request handling and business logic
 - **JSP** - Dynamic page generation (minimal use)
-- **MySQL** - Database management
+- **Oracle** - Database management
 - **JDBC** - Database connectivity
 - **Gson** - JSON parsing and generation
 
